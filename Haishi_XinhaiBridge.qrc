@@ -1,0 +1,8 @@
+<RCC>
+    <qresource prefix="/new">
+        <file>Images/HaiwanBridge.jpg</file>
+    </qresource>
+    <qresource prefix="/">
+        <file>11.qrc</file>
+    </qresource>
+</RCC>
