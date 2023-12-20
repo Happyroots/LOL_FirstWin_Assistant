@@ -436,18 +436,18 @@ void Contriols::keyPressEvent(QKeyEvent *event)
 {
     if(event->key() == Qt::Key_W)
     {
-        qDebug() << "按下了W键";
+        on_pushButton_cmdForward_clicked();
     }
     else if(event->key() == Qt::Key_A)
     {
-        qDebug() << "按下了A键";
+        on_pushButton_CmdLeft_clicked();
     }
     else if(event->key() == Qt::Key_S)
     {
-        qDebug() << "按下了S键";
+        on_pushButton_CmdBack_clicked();
     }
     else if(event->key() == Qt::Key_D)
     {
-        qDebug() << "按下了D键";
+        on_pushButton_CmdRight_clicked();
     }
 }
