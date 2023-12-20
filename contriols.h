@@ -47,7 +47,7 @@ signals:
     void closeSerialPort_DTU();
 
 private slots:
-    void on_pushButton_connect_clicked();
+//   / void on_pushButton_connect_clicked();
 
     void on_pushButton_cmdForward_clicked();
 
