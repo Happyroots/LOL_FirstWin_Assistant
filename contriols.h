@@ -64,9 +64,10 @@ private slots:
     void parseData(QByteArray newData);
     void processData(const QByteArray& qbytearray);
     // 新添加的成员函数，用于绘制轨迹点
-    void drawTrackPoint(qreal lNumber, qreal aNumber);
-    void onUpdateTimerTimeout();
-    void simulateData();
+    //void drawTrackPoint(qreal lNumber, qreal aNumber);
+    //void onUpdateTimerTimeout();
+    //void simulateData();
+    void connect_clicked();
 
 private:
     Ui::Contriols *ui;
@@ -74,7 +75,7 @@ private:
     QVector<QPointF> trackPoints;
     QTimer *updateTimer;
     // 在 Contriols 类中添加一个用于模拟数据的定时器
-    QTimer *simulatedDataTimer;
+    //QTimer *simulatedDataTimer;
 
 protected:
     // 重写绘图事件

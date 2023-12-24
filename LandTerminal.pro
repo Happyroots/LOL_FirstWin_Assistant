@@ -28,6 +28,5 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 
 include(dtu_arduino_driver.pri)
 
-RESOURCES += \
-    HaiwanBridge.qrc
+RESOURCES +=
 

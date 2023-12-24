@@ -51,35 +51,19 @@ Contriols::Contriols(QWidget *parent) :
 
     // 初始化定时器
     updateTimer = new QTimer(this);
-    connect(updateTimer, &QTimer::timeout, this, &Contriols::onUpdateTimerTimeout);
+    //connect(updateTimer, &QTimer::timeout, this, &Contriols::onUpdateTimerTimeout);
     updateTimer->start(2000); // 每100毫秒触发一次定时器
 
-    // 在 Contriols 类的构造函数中初始化定时器
-    //simulatedDataTimer = new QTimer(this);
-    //connect(simulatedDataTimer, &QTimer::timeout, this, &Contriols::simulateData);
-    //simulatedDataTimer->start(2000); // 每秒模拟一次数据更新
-
-    // 初始化 mapLabel
-    mapLabel = new QLabel(this);
-    mapLabel->setGeometry(0, 150, 1200, 800); // 你需要根据实际情况调整这里的参数
-    // 设置初始地图图片
-    QPixmap initialMap(":/new/Images/HaiwanBridge.jpg"); // 替换为你的图片路径
-    // 获取图片的大小
-    QSize imageSize = initialMap.size();
-
-    // 设置 QLabel 的大小为图片的大小
-    mapLabel->setFixedSize(imageSize);
-
-    mapLabel->setScaledContents(true); // 允许图片缩放
-    mapLabel->setPixmap(initialMap);
-    mapLabel->show();
 
     // 创建并打开日志文件，如果文件已经存在，会被清空
     QFile logFile(logFileName);
-    if (logFile.open(QIODevice::WriteOnly | QIODevice::Text)) {
+    if (logFile.open(QIODevice::WriteOnly | QIODevice::Text))
+    {
         QTextStream stream(&logFile);
         stream << "Time,SXNumber,LNumber,ANumber\n";
     }
+
+    connect_clicked();
 
 }
 
@@ -97,122 +81,19 @@ void Contriols::on_receive(QByteArray tmpdata)
     //drawTrackPoint(lNumber, aNumber);
 }
 
-// 添加一个槽函数，用于模拟位置数据的变化
-void Contriols::simulateData()
-{
-//    qreal lNumber0 = 121.0+31.261/60.0;//零点的GPS坐标
-//    qreal aNumber0 = 38.0+52.190/60.0;
 
-//    static qreal lNumber = 121.0+31.261/60.0;//零点的GPS坐标
-//    static qreal aNumber = 38.0+52.190/60.0;
-
-//    double Lon_1 = 121.0+32.096/60.0; //参照点的GPS坐标
-//    double Lat_1 = 38.0+51.945/60.0 ;
-
-//    // 模拟位置数据的变化
-//    lNumber += 0.0005;
-//    aNumber -= 0.0005;
-
-//   qreal lNumber1 = (lNumber-lNumber0)*1293.0/(Lon_1-lNumber0);//实时GPS坐标转为像素的坐标
-//   qreal aNumber1 = (aNumber-aNumber0)*493.0/(Lat_1-aNumber0);
-
-
-
-//    // 调用 drawTrackPoint 添加模拟数据的轨迹点
-//    drawTrackPoint(lNumber1, aNumber1);
-}
-
-void Contriols::onUpdateTimerTimeout()
-{
-    // 根据最新的轨迹点绘制轨迹
-    updateMapWithTrack();
-}
-
-void Contriols::updateMapWithTrack()
-{
-    // 获取当前地图图片
-    QPixmap currentMap = mapLabel->pixmap()->copy();
-
-    // 创建 QPainter 用于在图片上绘制
-    QPainter painter(&currentMap);
-    painter.setPen(Qt::red); // 设置轨迹线的颜色
-
-    // 绘制轨迹线
-    for (int i = 1; i < trackPoints.size(); ++i) {
-        painter.drawLine(trackPoints[i - 1], trackPoints[i]);
-    }
-
-    // 在地图上绘制轨迹点
-    painter.setPen(Qt::red); // 设置轨迹点颜色
-    painter.setBrush(Qt::blue);
-    for (const QPointF &point : trackPoints) {
-        painter.drawEllipse(point, 2, 2);
-        // 在每个轨迹点的旁边打印坐标值
-        //painter.drawText(point + QPointF(10, -10), QString("(%1, %2)").arg(point.x()).arg(point.y()));
-    }
-
-    // 更新地图图片
-    mapLabel->setPixmap(currentMap);
-
-
-}
-
-// 新添加的成员函数，用于绘制轨迹点
-void Contriols::drawTrackPoint(qreal lNumber, qreal aNumber)
-{
-    // 获取当前时间
-    //QString currentTime = QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss");
-    // 添加轨迹点到容器
-    qreal lNumber0 = 121.0+31.226/60.0;//零点的GPS坐标
-    qreal aNumber0 = 38.0+52.208/60.0;
-    //qreal lNumber0 = 121.312;//零点的GPS坐标
-    //qreal aNumber0 = 38.522;
-    qreal l1=lNumber-(int)lNumber;//小数点后的
-    qreal a1=aNumber-(int)aNumber;
-    //qreal l2=l1*100-(int)l1*100;//小数点后三位后的
-    lNumber = int(lNumber)+(l1*100)/60.0;
-    aNumber = int(aNumber)+(a1*100)/60.0;
-     //lNumber = 121.0+31.261/60.0;//零点的GPS坐标
-     //aNumber = 38.0+52.190/60.0;
-
-   // lNumber = lNumber+31.261/60.0;//零点的GPS坐标
-   // aNumber = aNumber+52.190/60.0;
-
-    double Lon_1 = 121.0+32.096/60.0; //参照点的GPS坐标
-    double Lat_1 = 38.0+51.9450/60.0 ;
-    qDebug() << "Original Track Point: (" << lNumber << ", " << aNumber<<")";
-
-
-     qreal lNumber1 = (lNumber-lNumber0)*738.0/(Lon_1-lNumber0);//实时GPS坐标转为像素的坐标
-     qreal aNumber1 = (aNumber-aNumber0)*288.0/(Lat_1-aNumber0);
-
-    trackPoints.append(QPointF(lNumber1, aNumber1));
-    //trackPoints.append(QPoint(240, 196));
-
-    // 在控制台输出轨迹点的数值
-    qDebug() << "Track Point: (" << lNumber1 << ", " << aNumber1  <<")";
-
-//    // 在文件中写入时间和数值
-//    QFile logFile(logFileName);
-//    if (logFile.open(QIODevice::Append | QIODevice::Text)) {
-//        QTextStream stream(&logFile);
-//        stream << currentTime << "," << sxNumber << "," << lNumber << "," << aNumber << "\n";
-//    }
-
-    // 重绘窗口
-    update();
-}
 
 void Contriols::sendCmdToShip(){
     if(m_SerialWorker_DTU){
         QString formattedString_cmd = QString("S%1,%2E").arg(m_iCmdRudder).arg(m_iCmdPropeller);
         QByteArray byteArray_cmd = formattedString_cmd.toUtf8();
-        ui->lineEdit_rudder->setText(QString::number(m_iCmdRudder - m_iBias_cmd_rudder));
-        ui->lineEdit_propeller->setText(QString::number(m_iCmdPropeller - m_iBias_cmd_prop));
+        ui->lineEdit_rudder_2->setText(QString::number(m_iCmdRudder - m_iBias_cmd_rudder));
+        ui->lineEdit_propeller_2->setText(QString::number(m_iCmdPropeller - m_iBias_cmd_prop));
 
 
         emit m_signalSendCmdToShip(byteArray_cmd);
     }
+    m_Client->write(QString("test").toUtf8().data());
 
 }
 
@@ -261,6 +142,9 @@ void Contriols::parseData(QByteArray newData)
 }
 
 void Contriols::processData(const QByteArray& qbytearray){
+
+    m_Client->write(QString(qbytearray).toUtf8().data());
+
     QString str = QString::fromUtf8(qbytearray);
     // 获取当前时间
     QString currentTime = QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss");
@@ -286,45 +170,47 @@ void Contriols::processData(const QByteArray& qbytearray){
 
         // 在文件中写入时间和数值
         QFile logFile(logFileName);
-        if (logFile.open(QIODevice::Append | QIODevice::Text)) {
+        if (logFile.open(QIODevice::Append | QIODevice::Text))
+        {
             QTextStream stream(&logFile);
             stream << currentTime << "," << sxNumber << "," << lNumber << "," << aNumber << "\n";
         }
 
         // 调用 drawTrackPoint 添加新的轨迹点
-        drawTrackPoint(lNumber, aNumber);
+        //drawTrackPoint(lNumber, aNumber);
 
     }
 }
 
-/*void Contriols::on_pushButton_connect_clicked()
+//void Contriols::on_pushButton_connect_clicked()
+void Contriols::connect_clicked()
 {
-    if(ui->pushButton_connect->text() == "连接" && !m_Client) {
+//    if(ui->pushButton_connect->text() == "连接" && !m_Client) {
         //获取服务器IP和端口
-        QString ip = ui->lineEdit_ip->text();
-        qint16 port = ui->spinBoxPortNetwork->text().toInt();
+        QString ip = "127.0.0.1"; //ui->lineEdit_ip->text();192.168.1.100
+        qint16 port = 8888; //ui->spinBoxPortNetwork->text().toInt();
         //主动与服务器建立连接
         m_Client = new QTcpSocket(this);
         m_Client->connectToHost(QHostAddress(ip),port);
-        connect(m_Client,&QTcpSocket::connected, this,
-                [=]()
-                {
-                    ui->pushButton_connect->setText("断连");
-                }
-                );
+//        connect(m_Client,&QTcpSocket::connected, this,
+//                [=]()
+//                {
+//                    ui->pushButton_connect->setText("断连");
+//                }
+//                );
         //获取编辑框内容
-        QString str = ui->pushButton_connect->text();
+//        QString str = ui->pushButton_connect->text();
         //发送数据
-        m_Client->write(str.toUtf8().data());
-    }
-    else if(ui->pushButton_connect->text() == "断连") {
-        m_Client->close();
-        delete m_Client; m_Client = nullptr;
-        ui->pushButton_connect->setText("连接");
-    }
+//        m_Client->write(str.toUtf8().data());
+//    }
+//    else if(ui->pushButton_connect->text() == "断连") {
+//        m_Client->close();
+//        delete m_Client; m_Client = nullptr;
+//        ui->pushButton_connect->setText("连接");
+//    }
 
 }
-*/
+
 
 void Contriols::on_pushButton_cmdForward_clicked()
 {
