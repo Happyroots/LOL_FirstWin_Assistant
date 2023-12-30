@@ -153,8 +153,8 @@ void Contriols::processData(const QByteArray& qbytearray){
 
     if (match.hasMatch()) {
         qreal sxNumber = match.captured(1).toDouble();
-        qreal lNumber = match.captured(2).toDouble();
-        qreal aNumber = match.captured(3).toDouble();
+        qreal lNumber =  match.captured(2).toDouble();
+        qreal aNumber =  match.captured(3).toDouble();
 
 
 
@@ -173,7 +173,22 @@ void Contriols::processData(const QByteArray& qbytearray){
         if (logFile.open(QIODevice::Append | QIODevice::Text))
         {
             QTextStream stream(&logFile);
-            stream << currentTime << "," << sxNumber << "," << lNumber << "," << aNumber << "\n";
+//            stream << currentTime << "," << sxNumber << "," << lNumber << "," << aNumber << "\n";
+            stream << currentTime << "," << QString::number(sxNumber, 'f', 6) << ","
+                   << QString::number(lNumber, 'f', 6) << "," << QString::number(aNumber, 'f', 6) << "\n";
+
+//            std::ostringstream ss;
+//            ss << std::fixed << std::setprecision(3) << sxNumber;
+//            QString sxNumberStr = QString::fromStdString(ss.str());
+//            ss.str(std::string());
+//            ss.clear();
+//            ss << std::fixed << std::setprecision(6) << lNumber;
+//            QString lNumberStr = QString::fromStdString(ss.str());
+//            ss.str(std::string());
+//            ss.clear();
+//            ss << std::fixed << std::setprecision(6) << aNumber;
+//            QString aNumberStr = QString::fromStdString(ss.str());
+//            stream << currentTime << "," << sxNumberStr << "," << lNumberStr << "," << aNumberStr << "\n";
         }
 
         // 调用 drawTrackPoint 添加新的轨迹点
