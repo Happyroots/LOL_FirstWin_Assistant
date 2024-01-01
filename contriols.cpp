@@ -15,35 +15,15 @@ Contriols::Contriols(QWidget *parent) :
     ui(new Ui::Contriols)
 {
     ui->setupUi(this);
-    QRegularExpression rx("^((2[0-4]\\d|25[0-5]|[01]?\\d\\d?)\\.){3}(2[0-4]\\d|25[0-5]|[01]?\\d\\d?)$");
-    //QRegularExpressionValidator* ipValidator = new QRegularExpressionValidator(rx, this);
-    //ui->lineEdit_ip->setValidator(ipValidator);
 
-    db_table_model_ = new QStandardItemModel();
-    ui->tableView_data->setModel(db_table_model_);
-    ui->tableView_data->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
-    QStringList table_h_headers;
-    table_h_headers << "GPSIMU信息回传" ;
-    db_table_model_->setHorizontalHeaderLabels(table_h_headers);
+//    初始化IP输入框
+//    QRegularExpression rx("^((2[0-4]\\d|25[0-5]|[01]?\\d\\d?)\\.){3}(2[0-4]\\d|25[0-5]|[01]?\\d\\d?)$");
+//    QRegularExpressionValidator* ipValidator = new QRegularExpressionValidator(rx, this);
+//    ui->lineEdit_ip->setValidator(ipValidator);
 
-    QStringList table_v_headers;
+//    ui->lineEdit_longtitude->setText(QString("121.456132")); ui->lineEdit_latitude->setText(QString("未收到"));
 
-    table_v_headers << "经纬度"  << "航向" ;
-    db_table_model_->setVerticalHeaderLabels(table_v_headers);
-
-    // 设置第一行第一列的数据为 "100"（数据位置从0开始计数）
-    QStandardItem *item = new QStandardItem("34.3323124, 121.25421311");
-    db_table_model_->setItem(0, 0, item);
-//    delete  item;
-    // 设置第二行第二列的数据为 "200"
-    item = new QStandardItem("200");
-    db_table_model_->setItem(1, 0, item);
-//    delete  item;
-    // 设置第三行第三列的数据为 "300"
-   // item = new QStandardItem("300");
-   // db_table_model_->setItem(2, 0, item);
-//    delete  item;
-
+//    初始化端口名字
     QList<QSerialPortInfo> portNameList = QSerialPortInfo::availablePorts();
     for(int i = 0; i < portNameList.size(); i++){
         ui->comboBox_portDTU->insertItem(i, portNameList[i].portName());
@@ -54,17 +34,19 @@ Contriols::Contriols(QWidget *parent) :
     //connect(updateTimer, &QTimer::timeout, this, &Contriols::onUpdateTimerTimeout);
     updateTimer->start(2000); // 每100毫秒触发一次定时器
 
+    QString logFileName = QDateTime::currentDateTime().toString("yyyy-MM-dd--hh:mm:ss");
 
     // 创建并打开日志文件，如果文件已经存在，会被清空
-    QFile logFile(logFileName);
-    if (logFile.open(QIODevice::WriteOnly | QIODevice::Text))
+    logFile = new QFile(logFileName);
+    if (logFile->open(QIODevice::WriteOnly | QIODevice::Text))
     {
-        QTextStream stream(&logFile);
+        QTextStream stream(logFile);
         stream << "Time,SXNumber,LNumber,ANumber\n";
     }
 
     connect_clicked();
-
+    timeDuration.start();
+    connect(this, SIGNAL(update_DashboardCourseSpeed(double )), ui->widget_DashboardCourseSpeed, SLOT(UpdateAngle(double)));
 }
 
 Contriols::~Contriols()
@@ -73,12 +55,12 @@ Contriols::~Contriols()
     if(!m_SerialWorker_DTU) {
         delete m_SerialWorker_DTU; m_SerialWorker_DTU = nullptr;
     }
+    delete logFile;
 }
 
 void Contriols::on_receive(QByteArray tmpdata)
 {
     parseData(tmpdata);
-    //drawTrackPoint(lNumber, aNumber);
 }
 
 
@@ -87,25 +69,23 @@ void Contriols::sendCmdToShip(){
     if(m_SerialWorker_DTU){
         QString formattedString_cmd = QString("S%1,%2E").arg(m_iCmdRudder).arg(m_iCmdPropeller);
         QByteArray byteArray_cmd = formattedString_cmd.toUtf8();
-        ui->lineEdit_rudder_2->setText(QString::number(m_iCmdRudder - m_iBias_cmd_rudder));
-        ui->lineEdit_propeller_2->setText(QString::number(m_iCmdPropeller - m_iBias_cmd_prop));
+        ui->lineEdit_rudder->setText(QString::number(m_iCmdRudder - m_iBias_cmd_rudder));
+        ui->lineEdit_propeller->setText(QString::number(m_iCmdPropeller - m_iBias_cmd_prop));
 
+        qreal velocity_reV_m = (m_iCmdPropeller - m_iBias_cmd_prop) * cmd2velocity;
+        ui->lineEdit_reV_m->setText(QString::number(velocity_reV_m, 'f', 2));
+        ui->lineEdit_reV_kn->setText(QString::number( velocity_reV_m * m_s2kn, 'f', 1));
 
         emit m_signalSendCmdToShip(byteArray_cmd);
     }
     m_Client->write(QString("test").toUtf8().data());
-
+//    ui->lineEdit_reV_m =
 }
 
 void Contriols::parseData(QByteArray newData)
 {
-//    /qDebug() << "before process" << newData;
-//    int startIdx = newData.indexOf("X"); // 查找起始位置
-//    if (startIdx != -1) {
-//        newData.remove(0, startIdx-1); // 删除已处理的数据包，包括'E\n'
-//        m_QSreceivedData += newData; // 追加新接收到的数据
-//    }
-    int endIdx = newData.indexOf("E"); // 查找结束位置
+
+    int endIdx = newData.indexOf("E");
     if (endIdx != -1) {
         newData.remove(endIdx+1, newData.size()); // 删除已处理的数据包，包括'E\n'
         m_QSreceivedData += newData; // 追加新接收到的数据
@@ -119,7 +99,7 @@ void Contriols::parseData(QByteArray newData)
         m_QSreceivedData = "";
         newData = "";
     }
-    int startIdx = newData.indexOf("X"); // 查找起始位置
+    int startIdx = newData.indexOf("X");
     if (startIdx != -1) {
         newData.remove(0, startIdx-1); // 删除已处理的数据包，包括'E\n'
         m_QSreceivedData += newData; // 追加新接收到的数据
@@ -156,43 +136,23 @@ void Contriols::processData(const QByteArray& qbytearray){
         qreal lNumber =  match.captured(2).toDouble();
         qreal aNumber =  match.captured(3).toDouble();
 
-
-
-        // 设置第一行第一列的数据为 "100"（数据位置从0开始计数）
-        QStandardItem *item = new QStandardItem(match.captured(3)+", "+match.captured(2));
-        db_table_model_->setItem(0, 0, item);
-        // 设置第二行第二列的数据为 "200"
-        item = new QStandardItem(match.captured(1));
-        db_table_model_->setItem(1, 0, item);
-
-//        qDebug() << "SX: " << sxNumber << " L: " << lNumber << " A: " << aNumber;
+//        qDebug() << "SX: " << sxNumber << " Long: " << lNumber << " Lat: " << aNumber;
         // 将输出语句修改为保存sxNumber、lNumber和aNumber的值
-
-        // 在文件中写入时间和数值
-        QFile logFile(logFileName);
-        if (logFile.open(QIODevice::Append | QIODevice::Text))
+        ui->lineEdit_longtitude->setText(QString::number(lNumber));
+        ui->lineEdit_latitude->setText(QString::number(aNumber));
+        qreal velocity_abs = caculate_velocity_abs(lNumber, aNumber);
+        ui->lineEdit_abV_m->setText(QString::number( velocity_abs, 'f', 2));
+        ui->lineEdit_abV_kn->setText(QString::number( velocity_abs*1.94384, 'f', 1));
+        if (sxNumber < 0) sxNumber += 360;
+        emit update_DashboardCourseSpeed(sxNumber); //
+        if (logFile->open(QIODevice::Append | QIODevice::Text))
         {
-            QTextStream stream(&logFile);
+            QTextStream stream(logFile);
 //            stream << currentTime << "," << sxNumber << "," << lNumber << "," << aNumber << "\n";
             stream << currentTime << "," << QString::number(sxNumber, 'f', 6) << ","
                    << QString::number(lNumber, 'f', 6) << "," << QString::number(aNumber, 'f', 6) << "\n";
-
-//            std::ostringstream ss;
-//            ss << std::fixed << std::setprecision(3) << sxNumber;
-//            QString sxNumberStr = QString::fromStdString(ss.str());
-//            ss.str(std::string());
-//            ss.clear();
-//            ss << std::fixed << std::setprecision(6) << lNumber;
-//            QString lNumberStr = QString::fromStdString(ss.str());
-//            ss.str(std::string());
-//            ss.clear();
-//            ss << std::fixed << std::setprecision(6) << aNumber;
-//            QString aNumberStr = QString::fromStdString(ss.str());
-//            stream << currentTime << "," << sxNumberStr << "," << lNumberStr << "," << aNumberStr << "\n";
+            logFile->close();
         }
-
-        // 调用 drawTrackPoint 添加新的轨迹点
-        //drawTrackPoint(lNumber, aNumber);
 
     }
 }
@@ -224,6 +184,19 @@ void Contriols::connect_clicked()
 //        ui->pushButton_connect->setText("连接");
 //    }
 
+}
+
+
+qreal Contriols::caculate_velocity_abs(qreal longtitude, qreal latitude)
+{
+    qreal velocity_abs = 0.0;
+    Gps gps;
+    qreal distance = gps.calculateDistance(longtitude_last, latitude_last, longtitude, latitude);
+    timeDuration.stop();
+    double duration = timeDuration.get_duration();
+    timeDuration.start();
+    velocity_abs = distance / duration;
+    return velocity_abs;
 }
 
 

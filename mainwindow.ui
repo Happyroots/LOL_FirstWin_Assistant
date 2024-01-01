@@ -23,6 +23,9 @@
       <height>1000</height>
      </rect>
     </property>
+    <property name="styleSheet">
+     <string notr="true"/>
+    </property>
    </widget>
   </widget>
   <widget class="QMenuBar" name="menubar">
@@ -31,7 +34,7 @@
      <x>0</x>
      <y>0</y>
      <width>280</width>
-     <height>25</height>
+     <height>21</height>
     </rect>
    </property>
   </widget>

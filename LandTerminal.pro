@@ -10,15 +10,22 @@ CONFIG += c++17
 
 SOURCES += \
     contriols.cpp \
+    dashboardcoursespeed.cpp \
+    gps.cpp \
     main.cpp \
     mainwindow.cpp \
+    timeduration.cpp
 
 HEADERS += \
     contriols.h \
+    dashboardcoursespeed.h \
+    gps.h \
     mainwindow.h \
+    timeduration.h
 
 FORMS += \
     contriols.ui \
+    dashboardcoursespeed.ui \
     mainwindow.ui \
 
 # Default rules for deployment.
@@ -28,5 +35,6 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 
 include(dtu_arduino_driver.pri)
 
-RESOURCES +=
+RESOURCES += \
+    resource.qrc
 

@@ -14,6 +14,8 @@
 #include <QTextStream>
 #include <QDateTime>
 #include <QKeyEvent>
+#include "gps.h"
+#include "timeduration.h"
 
 namespace Ui {
 class Contriols;
@@ -45,6 +47,7 @@ public:
 signals:
     void m_signalSendCmdToShip(const QByteArray data);
     void closeSerialPort_DTU();
+    void update_DashboardCourseSpeed(double value);
 
 private slots:
 //   / void on_pushButton_connect_clicked();
@@ -68,6 +71,7 @@ private slots:
     //void onUpdateTimerTimeout();
     //void simulateData();
     void connect_clicked();
+    qreal caculate_velocity_abs(qreal , qreal);
 
 private:
     Ui::Contriols *ui;
@@ -86,8 +90,15 @@ public:
     qreal sxNumber;
     qreal lNumber;
     qreal aNumber;
-    QString logFileName = "log.txt";
 
+    qreal sxNumber_last = 0.0;
+    qreal longtitude_last = 0.0;
+    qreal latitude_last = 0.0;
+
+    qreal m_s2kn = 1.9438445;
+    qreal cmd2velocity = 0.0255;
+    QFile *logFile;
+    TimeDuration timeDuration;
     void keyPressEvent(QKeyEvent *event) override;
 
 };
