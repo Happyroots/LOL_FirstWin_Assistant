@@ -50,6 +50,10 @@ signals:
     void closeSerialPort_DTU();
     void update_DashboardCourseSpeed(double value);
     void closeSerialPort_RudderBell();
+#ifdef TESTING_MODE
+    void m_signalSendCmdToArduino(const QByteArray data);
+    void closeSerialPort_Arduino();
+#endif
 
 private slots:
 //   / void on_pushButton_connect_clicked();
@@ -72,6 +76,9 @@ private slots:
     void connect_clicked();
     qreal caculate_velocity_abs(qreal , qreal);
     void on_pushButton_openPortRudderBell_clicked();
+#ifdef TESTING_MODE
+    void on_pushButton_openPortArduino_clicked();
+#endif
 
 private:
     Ui::Contriols *ui;
@@ -94,7 +101,7 @@ public:
     TimeDuration timeDuration;
     void keyPressEvent(QKeyEvent *event) override;
 #ifdef TESTING_MODE
-
+    SerialWorker *m_cSerialArduino;
 #endif
 };
 

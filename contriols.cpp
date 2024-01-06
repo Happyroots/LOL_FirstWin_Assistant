@@ -95,6 +95,21 @@ void Contriols::sendCmdToShip(){
 
         emit m_signalSendCmdToShip(byteArray_cmd);
     }
+
+#ifdef TESTING_MODE
+    QByteArray msgArduino;
+    msgArduino.resize(10);
+    int written = qsnprintf(msgArduino.data(), msgArduino.size(), "S%dM%dE", m_iCmdRudder, m_iCmdPropeller);
+    if (written > -1) {
+        msgArduino.resize(written);
+        qDebug() << "Formatted message:" << msgArduino;
+    } else {
+        qDebug() << "Error while formatting message.";
+    }
+    emit m_signalSendCmdToArduino(msgArduino);
+#else
+#endif
+
     m_Client->write(QString("test").toUtf8().data());
 //    ui->lineEdit_reV_m =
 }
@@ -363,3 +378,49 @@ void Contriols::on_pushButton_openPortRudderBell_clicked()
 
 }
 
+#ifdef TESTING_MODE
+
+void Contriols::on_pushButton_openPortArduino_clicked()
+{
+    if(ui->pushButton_openPortArduino->text() == tr("打开Arduino"))
+    {
+
+        if (ui->comboBox_port->count() > 0)///当前列表的内容个数
+        {///打开串口操作
+            int SelBaudRate=115200;
+            m_cSerialArduino = new SerialWorkerP(ui->comboBox_port->currentText().toStdString().c_str(),
+                                                  SelBaudRate,
+                                                  QSerialPort::NoParity,
+                                                  QSerialPort::Data8,
+                                                  QSerialPort::OneStop,
+                                                  QSerialPort::NoFlowControl,
+                                                  500);
+//            qRegisterMetaType<Bridge_ZL::Values_Bridge>("Bridge_ZL::Values_Bridge");
+//            connect(m_SerialWorker_RudderBell, SIGNAL(sendBridgeDataToGui(Bridge_ZL::Values_Bridge)), this, SLOT(On_receive_RudderBell(Bridge_ZL::Values_Bridge)), Qt::QueuedConnection);
+            connect(this, SIGNAL(m_signalSendCmdToArduino(QByteArray)), m_SerialWorker_DTU, SLOT(doDataSendWork(const QByteArray)), Qt::QueuedConnection);
+            connect(this, SIGNAL(closeSerialPort_Arduino()), m_SerialWorker_RudderBell, SLOT(close()), Qt::QueuedConnection);
+            m_cSerialArduino->start();
+            if(m_cSerialArduino->is_open())
+            {
+                ui->pushButton_openPortArduino->setText(tr("关闭Arduino"));        }
+            else
+            {
+            QMessageBox::information(NULL,tr("information"),tr("open port error") + QString("\n\ncode: %1\nmessage: %2").arg(pushButton_openPortArduino->getLastError()).arg(pushButton_openPortArduino->getLastErrorMsg()));
+                ui->pushButton_openPortArduino->setText(tr("打开Arduino"));
+                qDebug()<< m_cSerialArduino->getLastError();
+            }
+        }
+        else
+        {
+            QMessageBox::information(NULL,tr("information"),tr("This Computer no avaiable port"));
+            qDebug()<< "This Computer no avaiable port";
+        }
+    }
+    else
+    {
+        emit closeSerialPort_Arduino();
+        ui->pushButton_openPortArduino->setText(tr("打开Arduino"));
+    }
+}
+
+#endif

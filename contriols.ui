@@ -54,7 +54,7 @@
     <rect>
      <x>10</x>
      <y>60</y>
-     <width>261</width>
+     <width>277</width>
      <height>41</height>
     </rect>
    </property>
@@ -911,6 +911,19 @@ background-color: rgb(0, 85, 127);</string>
     <string notr="true">border-image: url(:/Images/cs.png);</string>
    </property>
   </widget>
+  <widget class="QPushButton" name="pushButton_openPortArduino">
+   <property name="geometry">
+    <rect>
+     <x>170</x>
+     <y>960</y>
+     <width>89</width>
+     <height>24</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>打开Arduino</string>
+   </property>
+  </widget>
   <zorder>label_12</zorder>
   <zorder>label</zorder>
   <zorder>horizontalLayoutWidget</zorder>
@@ -926,6 +939,7 @@ background-color: rgb(0, 85, 127);</string>
   <zorder>line_2</zorder>
   <zorder>line_3</zorder>
   <zorder>widget_DashboardCourseSpeed</zorder>
+  <zorder>pushButton_openPortArduino</zorder>
  </widget>
  <customwidgets>
   <customwidget>
