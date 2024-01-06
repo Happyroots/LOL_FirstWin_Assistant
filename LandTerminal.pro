@@ -11,17 +11,13 @@ CONFIG += c++17
 SOURCES += \
     contriols.cpp \
     dashboardcoursespeed.cpp \
-    gps.cpp \
     main.cpp \
-    mainwindow.cpp \
-    timeduration.cpp
+    mainwindow.cpp
 
 HEADERS += \
     contriols.h \
     dashboardcoursespeed.h \
-    gps.h \
-    mainwindow.h \
-    timeduration.h
+    mainwindow.h
 
 FORMS += \
     contriols.ui \
@@ -34,7 +30,12 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
 
 include(dtu_arduino_driver.pri)
+include($$PWD/utils.pri )
+include(    $$PWD/driver_RudderBellZL.pri)
 
 RESOURCES += \
     resource.qrc
+
+DEFINES += TESTING_MODE
+
 

@@ -14,8 +14,10 @@
 #include <QTextStream>
 #include <QDateTime>
 #include <QKeyEvent>
-#include "gps.h"
-#include "timeduration.h"
+#include "utils/gps.h"
+#include "utils/timeduration.h"
+#include "drivers/serialworkerp.h"
+#include "drivers/bridge_zl.h"
 
 namespace Ui {
 class Contriols;
@@ -38,16 +40,16 @@ public:
     int m_iStepPropellar = 5;
     int m_iStepRudder = 5;
 
-    // 新添加的 QLabel 成员变量
-    QLabel *mapLabel;
     SerialWorker *m_SerialWorker_DTU;
     QByteArray m_QSreceivedData;
-    QStandardItemModel* db_table_model_ = nullptr;
+    SerialWorkerP *m_SerialWorker_RudderBell;
+    Bridge_ZL::Values_Bridge m_sValues_Bridge;
 
 signals:
     void m_signalSendCmdToShip(const QByteArray data);
     void closeSerialPort_DTU();
     void update_DashboardCourseSpeed(double value);
+    void closeSerialPort_RudderBell();
 
 private slots:
 //   / void on_pushButton_connect_clicked();
@@ -62,29 +64,20 @@ private slots:
 
     void on_pushButton_openPortDTU_clicked();
 
-    void on_receive(QByteArray tmpdata);
+    void On_receive_DTU(QByteArray tmpdata);
+    void On_receive_RudderBell(Bridge_ZL::Values_Bridge data_RudderBell);
     void sendCmdToShip();
     void parseData(QByteArray newData);
     void processData(const QByteArray& qbytearray);
-    // 新添加的成员函数，用于绘制轨迹点
-    //void drawTrackPoint(qreal lNumber, qreal aNumber);
-    //void onUpdateTimerTimeout();
-    //void simulateData();
     void connect_clicked();
     qreal caculate_velocity_abs(qreal , qreal);
+    void on_pushButton_openPortRudderBell_clicked();
 
 private:
     Ui::Contriols *ui;
     // 添加一个用于存储轨迹点的容器
     QVector<QPointF> trackPoints;
     QTimer *updateTimer;
-    // 在 Contriols 类中添加一个用于模拟数据的定时器
-    //QTimer *simulatedDataTimer;
-
-protected:
-    // 重写绘图事件
-    void paintEvent(QPaintEvent *event) override;
-    void updateMapWithTrack();
 
 public:
     qreal sxNumber;
@@ -100,7 +93,9 @@ public:
     QFile *logFile;
     TimeDuration timeDuration;
     void keyPressEvent(QKeyEvent *event) override;
+#ifdef TESTING_MODE
 
+#endif
 };
 
 #endif // CONTRIOLS_H

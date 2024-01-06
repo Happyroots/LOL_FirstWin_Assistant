@@ -54,22 +54,22 @@
     <rect>
      <x>10</x>
      <y>60</y>
-     <width>251</width>
+     <width>261</width>
      <height>41</height>
     </rect>
    </property>
    <layout class="QHBoxLayout" name="horizontalLayout">
     <item>
-     <widget class="QComboBox" name="comboBox_portDTU">
+     <widget class="QComboBox" name="comboBox_port">
       <property name="minimumSize">
        <size>
-        <width>100</width>
+        <width>70</width>
         <height>30</height>
        </size>
       </property>
       <property name="maximumSize">
        <size>
-        <width>100</width>
+        <width>70</width>
         <height>30</height>
        </size>
       </property>
@@ -99,13 +99,13 @@ background-color: rgb(0, 0, 0);</string>
       </property>
       <property name="minimumSize">
        <size>
-        <width>100</width>
+        <width>80</width>
         <height>30</height>
        </size>
       </property>
       <property name="maximumSize">
        <size>
-        <width>100</width>
+        <width>80</width>
         <height>30</height>
        </size>
       </property>
@@ -121,12 +121,48 @@ background-color: rgb(0, 0, 0);</string>
 background-color: rgb(0, 0, 0);</string>
       </property>
       <property name="text">
-       <string>打开DTU串口</string>
+       <string>连接网络</string>
       </property>
      </widget>
     </item>
     <item>
      <spacer name="horizontalSpacer">
+      <property name="orientation">
+       <enum>Qt::Horizontal</enum>
+      </property>
+      <property name="sizeHint" stdset="0">
+       <size>
+        <width>40</width>
+        <height>20</height>
+       </size>
+      </property>
+     </spacer>
+    </item>
+    <item>
+     <widget class="QPushButton" name="pushButton_openPortRudderBell">
+      <property name="minimumSize">
+       <size>
+        <width>90</width>
+        <height>0</height>
+       </size>
+      </property>
+      <property name="maximumSize">
+       <size>
+        <width>90</width>
+        <height>16777215</height>
+       </size>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">color: rgb(255, 255, 255);
+background-color: rgb(0, 0, 0);</string>
+      </property>
+      <property name="text">
+       <string>连接驾驶台</string>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <spacer name="horizontalSpacer_3">
       <property name="orientation">
        <enum>Qt::Horizontal</enum>
       </property>

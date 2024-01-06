@@ -8,7 +8,6 @@ class SerialWorker : public QObject
 {
     Q_OBJECT
 public:
-    explicit SerialWorker(QSerialPort *ser,QObject *parent = nullptr);
     explicit SerialWorker(QObject *parent = nullptr);
     explicit SerialWorker(
                            const QString portName,
@@ -22,7 +21,8 @@ public:
 //                           unsigned int readBufferSize
                            );
     ~SerialWorker();
-    void init_port();  //初始化串口
+//    void init_port();  //初始化串口
+    void start();
     bool setSerialPortParams(QSerialPort &serial, qint32 baudRate);
     void init(const QString portName,
               int baudRate /*= itas109::BaudRate::BaudRate9600*/,
@@ -42,23 +42,21 @@ private:
     int m_iTimeout = 0;
 
 signals:
-    void sendResultToGui(QByteArray result);
+    virtual void sendResultToGui(QByteArray result);
 
     //接收数据
-    void receive_data(QByteArray tmp);
+    virtual void receive_data(QByteArray tmp);
 
 
 
-private:
+protected:
     QThread *m_thread;
+    QSerialPort *m_serialPort;
 
 public slots:
-    void doDataSendWork(const QByteArray data);
-    void doDataReciveWork();
+    virtual void doDataSendWork(const QByteArray data);
+    virtual void doDataReciveWork();
     void close();
-
-private:
-    QSerialPort *m_serialPort;
 };
 
 #endif // SERIALWORKER_H

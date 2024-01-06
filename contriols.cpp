@@ -26,7 +26,7 @@ Contriols::Contriols(QWidget *parent) :
 //    初始化端口名字
     QList<QSerialPortInfo> portNameList = QSerialPortInfo::availablePorts();
     for(int i = 0; i < portNameList.size(); i++){
-        ui->comboBox_portDTU->insertItem(i, portNameList[i].portName());
+        ui->comboBox_port->insertItem(i, portNameList[i].portName());
     }
 
     // 初始化定时器
@@ -58,9 +58,26 @@ Contriols::~Contriols()
     delete logFile;
 }
 
-void Contriols::on_receive(QByteArray tmpdata)
+void Contriols::On_receive_DTU(QByteArray tmpdata)
 {
     parseData(tmpdata);
+}
+
+void Contriols::On_receive_RudderBell(Bridge_ZL::Values_Bridge data_RudderBell)
+{
+    m_iCmdPropeller = -data_RudderBell.valueBellLeft;
+    m_iCmdPropeller += m_iBias_cmd_prop;
+    m_iCmdPropeller = (m_iCmdPropeller + 1) / 2 * 2;;
+    m_iCmdRudder = -data_RudderBell.valueRudder;
+    m_iCmdRudder += m_iBias_cmd_rudder;
+    m_iCmdRudder = (m_iCmdRudder + 2) / 5 * 5;
+    sendCmdToShip();
+
+#ifdef TESTING_MODE
+
+#else
+#endif
+
 }
 
 
@@ -239,13 +256,13 @@ void Contriols::on_pushButton_CmdRight_clicked()
 
 void Contriols::on_pushButton_openPortDTU_clicked()
 {
-    if(ui->pushButton_openPortDTU->text() == tr("打开DTU串口"))
+    if(ui->pushButton_openPortDTU->text() == tr("连接网络"))
     {
 
-        if (ui->comboBox_portDTU->count() > 0)///当前列表的内容个数
+        if (ui->comboBox_port->count() > 0)///当前列表的内容个数
         {///打开串口操作
             int SelBaudRate=9600;
-            m_SerialWorker_DTU = new SerialWorker(ui->comboBox_portDTU->currentText().toStdString().c_str(),
+            m_SerialWorker_DTU = new SerialWorker(ui->comboBox_port->currentText().toStdString().c_str(),
                                                   SelBaudRate,
                                                   QSerialPort::NoParity,
                                                   QSerialPort::Data8,
@@ -253,16 +270,17 @@ void Contriols::on_pushButton_openPortDTU_clicked()
                                                   QSerialPort::NoFlowControl,
                                                   500);
 
-            connect(m_SerialWorker_DTU, SIGNAL(sendResultToGui(QByteArray)), this, SLOT(on_receive(QByteArray)), Qt::QueuedConnection);
+            connect(m_SerialWorker_DTU, SIGNAL(sendResultToGui(QByteArray)), this, SLOT(On_receive_DTU(QByteArray)), Qt::QueuedConnection);
             connect(this, SIGNAL(m_signalSendCmdToShip(QByteArray)), m_SerialWorker_DTU, SLOT(doDataSendWork(const QByteArray)), Qt::QueuedConnection);
             connect(this, SIGNAL(closeSerialPort_DTU()), m_SerialWorker_DTU, SLOT(close()), Qt::QueuedConnection);
+            m_SerialWorker_DTU->start();
             if(m_SerialWorker_DTU->is_open())
             {
-                ui->pushButton_openPortDTU->setText(tr("关闭DTU串口"));        }
+                ui->pushButton_openPortDTU->setText(tr("关闭网络"));        }
             else
             {
             QMessageBox::information(NULL,tr("information"),tr("open port error") + QString("\n\ncode: %1\nmessage: %2").arg(m_SerialWorker_DTU->getLastError()).arg(m_SerialWorker_DTU->getLastErrorMsg()));
-                ui->pushButton_openPortDTU->setText(tr("打开DTU串口"));
+                ui->pushButton_openPortDTU->setText(tr("连接网络"));
                 qDebug()<< m_SerialWorker_DTU->getLastError();
             }
         }
@@ -276,33 +294,8 @@ void Contriols::on_pushButton_openPortDTU_clicked()
     {
         emit closeSerialPort_DTU();
 //        m_SerialWorker_DTU->close(); //不能跨线程操作
-        ui->pushButton_openPortDTU->setText(tr("打开DTU串口"));
+        ui->pushButton_openPortDTU->setText(tr("连接网络"));
     }
-}
-
-
-
-// 重写绘图事件
-void Contriols::paintEvent(QPaintEvent *event)
-{
-    Q_UNUSED(event);
-
-//    // 创建绘图对象
-//    QPainter painter(this);
-
-//    // 绘制轨迹点
-//    painter.setPen(Qt::blue); // 设置轨迹点颜色
-//    painter.setBrush(Qt::blue);
-
-//    for (const QPointF &point : trackPoints)
-//    {
-//        // 在地图上绘制每个轨迹点
-//        painter.drawEllipse(point, 5, 5);
-//        // 在每个轨迹点的旁边打印坐标值
-//        painter.drawText(point + QPointF(10, -10), QString("(%1, %2)").arg(point.x()).arg(point.y()));
-//    }
-
-
 }
 
 
@@ -325,3 +318,48 @@ void Contriols::keyPressEvent(QKeyEvent *event)
         on_pushButton_CmdRight_clicked();
     }
 }
+
+void Contriols::on_pushButton_openPortRudderBell_clicked()
+{
+//    CInterfaceForIMDModule* m_pInterfaceForIMDModule;		//通过IMD模块采集车钟、侧推、舵轮等信息接口对象
+    if(ui->pushButton_openPortRudderBell->text() == tr("连接驾驶台"))
+    {
+
+        if (ui->comboBox_port->count() > 0)///当前列表的内容个数
+        {///打开串口操作
+            int SelBaudRate=115200;
+            m_SerialWorker_RudderBell = new SerialWorkerP(ui->comboBox_port->currentText().toStdString().c_str(),
+                                                  SelBaudRate,
+                                                  QSerialPort::NoParity,
+                                                  QSerialPort::Data8,
+                                                  QSerialPort::OneStop,
+                                                  QSerialPort::NoFlowControl,
+                                                  500);
+            qRegisterMetaType<Bridge_ZL::Values_Bridge>("Bridge_ZL::Values_Bridge");
+            connect(m_SerialWorker_RudderBell, SIGNAL(sendBridgeDataToGui(Bridge_ZL::Values_Bridge)), this, SLOT(On_receive_RudderBell(Bridge_ZL::Values_Bridge)), Qt::QueuedConnection);
+            connect(this, SIGNAL(closeSerialPort_RudderBell()), m_SerialWorker_RudderBell, SLOT(close()), Qt::QueuedConnection);
+            m_SerialWorker_RudderBell->start();
+            if(m_SerialWorker_RudderBell->is_open())
+            {
+                ui->pushButton_openPortRudderBell->setText(tr("关闭驾驶台"));        }
+            else
+            {
+            QMessageBox::information(NULL,tr("information"),tr("open port error") + QString("\n\ncode: %1\nmessage: %2").arg(m_SerialWorker_RudderBell->getLastError()).arg(m_SerialWorker_RudderBell->getLastErrorMsg()));
+                ui->pushButton_openPortRudderBell->setText(tr("连接驾驶台"));
+                qDebug()<< m_SerialWorker_RudderBell->getLastError();
+            }
+        }
+        else
+        {
+            QMessageBox::information(NULL,tr("information"),tr("This Computer no avaiable port"));
+            qDebug()<< "This Computer no avaiable port";
+        }
+    }
+    else
+    {
+        emit closeSerialPort_RudderBell();
+        ui->pushButton_openPortRudderBell->setText(tr("连接驾驶台"));
+    }
+
+}
+

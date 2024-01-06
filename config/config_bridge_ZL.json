@@ -1,0 +1,16 @@
+{
+
+    "iTelegraphBellL1" : 5450,
+    "iTelegraphBellL2" : 11980,
+    "iTelegraphBellL3" : 18390,
+
+    "iTelegraphBellR1" : 18810,
+    "iTelegraphBellR2" : 11990,
+    "iTelegraphBellR3" : 5550,
+
+    "iRudderAngle1" : 17790,
+    "iRudderAngle2" : 11990,
+    "iRudderAngle3" : 6100,
+    "iStbdMaxRudderAng" : 35.0
+
+}

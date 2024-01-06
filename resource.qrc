@@ -2,5 +2,6 @@
     <qresource prefix="/">
         <file>Images/cs.png</file>
         <file>Images/bg.png</file>
+        <file>config/config_bridge_ZL.json</file>
     </qresource>
 </RCC>

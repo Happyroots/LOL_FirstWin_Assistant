@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>280</width>
+    <width>300</width>
     <height>1000</height>
    </rect>
   </property>
@@ -14,27 +14,23 @@
    <string>LandTerminal</string>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <widget class="Contriols" name="widget" native="true">
-    <property name="geometry">
-     <rect>
-      <x>10</x>
-      <y>0</y>
-      <width>275</width>
-      <height>1000</height>
-     </rect>
-    </property>
-    <property name="styleSheet">
-     <string notr="true"/>
-    </property>
-   </widget>
+   <layout class="QGridLayout" name="gridLayout">
+    <item row="0" column="0">
+     <widget class="Contriols" name="widget" native="true">
+      <property name="styleSheet">
+       <string notr="true"/>
+      </property>
+     </widget>
+    </item>
+   </layout>
   </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>280</width>
-     <height>21</height>
+     <width>300</width>
+     <height>25</height>
     </rect>
    </property>
   </widget>

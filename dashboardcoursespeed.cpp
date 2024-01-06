@@ -197,7 +197,7 @@ void DashboardCourseSpeed::drawNumericValue(QPainter *painter)
     QFontMetricsF fm(font());
     double w = fm.size(Qt::TextSingleLine,str).width();
     painter->setPen(m_foreground);
-    painter->drawText(-w / 2, 42, str);
+    painter->drawText(-w / 2 + 10, 42, str);
 }
 
 void DashboardCourseSpeed::UpdateAngle(double value)

@@ -2,11 +2,6 @@
 #include <QDebug>
 #include <QThread>
 
-SerialWorker::SerialWorker(QSerialPort *ser,QObject *parent)
-    : QObject(parent),m_serialPort(ser)
-{
-
-}
 
 SerialWorker::SerialWorker(QObject *parent)
     : QObject(parent)
@@ -14,7 +9,7 @@ SerialWorker::SerialWorker(QObject *parent)
     m_thread = new QThread();
 
     m_serialPort = new QSerialPort();
-    init_port();
+//    init_port();
     this->moveToThread(m_thread);
     m_serialPort->moveToThread(m_thread);
     m_thread->start();  //启动线程
@@ -32,7 +27,6 @@ SerialWorker::SerialWorker(
                            )
     : QObject(parent)
 {
-    m_thread = new QThread();
 
     m_serialPort = new QSerialPort();
     init(portName,
@@ -43,11 +37,10 @@ SerialWorker::SerialWorker(
          flowControl,
          ReadIntervalTimeout
          );
-
-//    init_port();
+    m_thread = new QThread();
     this->moveToThread(m_thread);
     m_serialPort->moveToThread(m_thread);
-    m_thread->start();  //启动线程
+
 }
 
 SerialWorker::~SerialWorker()
@@ -57,23 +50,29 @@ SerialWorker::~SerialWorker()
 
 }
 
-void SerialWorker::init_port()
+//void SerialWorker::init_port()
+//{
+//        m_serialPort->setPortName("/dev/ttyS1");                   //串口名 windows下写作COM1
+//        m_serialPort->setBaudRate(38400);                           //波特率
+//        m_serialPort->setDataBits(QSerialPort::Data8);             //数据位
+//        m_serialPort->setStopBits(QSerialPort::OneStop);           //停止位
+//        m_serialPort->setParity(QSerialPort::NoParity);            //奇偶校验
+//        m_serialPort->setFlowControl(QSerialPort::NoFlowControl);  //流控制
+//        if (m_serialPort->open(QIODevice::ReadWrite))
+//            {
+//                qDebug() << "Port have been opened";
+//            }
+//        else
+//            {
+//                qDebug() << "open it failed";
+//            }
+//        connect(m_serialPort, SIGNAL(readyRead()), this, SLOT(doDataReciveWork()), Qt::QueuedConnection); //Qt::DirectConnection
+//}
+
+void SerialWorker::start()
 {
-        m_serialPort->setPortName("/dev/ttyS1");                   //串口名 windows下写作COM1
-        m_serialPort->setBaudRate(38400);                           //波特率
-        m_serialPort->setDataBits(QSerialPort::Data8);             //数据位
-        m_serialPort->setStopBits(QSerialPort::OneStop);           //停止位
-        m_serialPort->setParity(QSerialPort::NoParity);            //奇偶校验
-        m_serialPort->setFlowControl(QSerialPort::NoFlowControl);  //流控制
-        if (m_serialPort->open(QIODevice::ReadWrite))
-            {
-                qDebug() << "Port have been opened";
-            }
-        else
-            {
-                qDebug() << "open it failed";
-            }
-        connect(m_serialPort, SIGNAL(readyRead()), this, SLOT(doDataReciveWork()), Qt::QueuedConnection); //Qt::DirectConnection
+
+    m_thread->start();  //启动线程
 }
 
 void SerialWorker::init(const QString portName,
@@ -110,6 +109,8 @@ void SerialWorker::init(const QString portName,
 
 }
 
+
+//只读
 bool SerialWorker::is_open()
 {
     return m_bIsOpen;
@@ -118,7 +119,7 @@ bool SerialWorker::is_open()
 void SerialWorker::close()
 {
     m_serialPort->close();
-    //    delete m_serialPort;
+    m_bIsOpen = false;
 }
 
 int SerialWorker::getLastError() const
@@ -136,6 +137,7 @@ void SerialWorker::doDataSendWork(const QByteArray data)
 //    qDebug() <<  "子线程槽函数发送数据：" << data << "线程ID：" << QThread::currentThreadId();
     // 发送数据
     m_serialPort->write(data);
+    m_serialPort->flush();
 }
 
 void SerialWorker::doDataReciveWork()
@@ -145,7 +147,7 @@ void SerialWorker::doDataReciveWork()
         QByteArray buffer = m_serialPort->readAll();
 
         // 2.进行数据处理
-        QString resultStr = buffer;
+//        QString resultStr = buffer;
 //        qDebug() <<  "子线程收到数据：" << resultStr << "线程ID：" << QThread::currentThreadId();
 
         // 3.将结果发送到主线程
