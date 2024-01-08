@@ -3,8 +3,8 @@
 
 #include <QWidget>
 #include <QTcpSocket>
-#include "dtu_arduino_driver.h"
-#include<chrono>
+//#include "dtu_arduino_driver.h"
+#include <chrono>
 #include <thread>
 #include <QStandardItemModel>
 #include <QImage>  // 添加这一行
@@ -18,6 +18,7 @@
 #include "utils/timeduration.h"
 #include "drivers/serialworkerp.h"
 #include "drivers/bridge_zl.h"
+#include "drivers/serialworker.h"
 
 namespace Ui {
 class Contriols;

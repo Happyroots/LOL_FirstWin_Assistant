@@ -23,10 +23,10 @@ DashboardCourseSpeed::DashboardCourseSpeed(QWidget *parent) :
     m_precision = 1;
     m_value = 0;
 
-    m_updateTimer = new QTimer(this);
-    m_updateTimer->setInterval(50);//间隔，微妙微单位，大家可以改一下这个值看看转动速度。
-    connect(m_updateTimer, SIGNAL(timeout()), this, SLOT(UpdateAngle()));
-    m_updateTimer->start();//启动定时器
+//    m_updateTimer = new QTimer(this);
+//    m_updateTimer->setInterval(50);//间隔，微妙微单位，大家可以改一下这个值看看转动速度。
+//    connect(m_updateTimer, SIGNAL(timeout()), this, SLOT(UpdateAngle()));
+//    m_updateTimer->start();//启动定时器
 
     setWindowFlags(Qt::FramelessWindowHint);//无窗体
     setAttribute(Qt::WA_TranslucentBackground);//背景透明

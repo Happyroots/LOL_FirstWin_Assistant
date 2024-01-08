@@ -46,7 +46,7 @@ private:
     QTimer *m_updateTimer;
     QString m_units;
     QString m_title;
-    public Q_SLOTS:
+public Q_SLOTS:
     void UpdateAngle();
 
 private:

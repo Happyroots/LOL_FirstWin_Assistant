@@ -1,6 +1,0 @@
-<RCC>
-    <qresource prefix="/new">
-        <file>Images/XinghaiBridge.jpg</file>
-        <file>Images/HaiwanBridge.jpg</file>
-    </qresource>
-</RCC>

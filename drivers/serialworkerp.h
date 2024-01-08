@@ -1,7 +1,7 @@
 #ifndef SERIALWORKERP_H
 #define SERIALWORKERP_H
 
-#include <serialworker.h>
+#include <drivers/serialworker.h>
 #include <QTimer>
 #include "drivers/bridge_zl.h"
 

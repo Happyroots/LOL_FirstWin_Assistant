@@ -8,6 +8,7 @@
 #include <QFile>
 #include <QTextStream>
 #include <QPainter>
+#include <QSerialPortInfo>
 
 
 Contriols::Contriols(QWidget *parent) :
@@ -47,6 +48,14 @@ Contriols::Contriols(QWidget *parent) :
     connect_clicked();
     timeDuration.start();
     connect(this, SIGNAL(update_DashboardCourseSpeed(double )), ui->widget_DashboardCourseSpeed, SLOT(UpdateAngle(double)));
+
+
+#ifdef TESTING_MODE
+#else
+    ui->pushButton_openPortArduino->setEnabled(false);
+    ui->pushButton_openPortArduino->setVisible(false);
+#endif
+
 }
 
 Contriols::~Contriols()
