@@ -93,6 +93,7 @@ void SerialWorker::init(const QString portName,
     m_serialPort->setParity(parity);              //奇偶校验
     m_serialPort->setFlowControl(flowControl);    //流控制
     m_serialPort->setReadBufferSize(300);
+    m_serialPort->setDataTerminalReady(true);
     m_iTimeout = ReadIntervalTimeout;
 //    m_serialPort->setReadIntervalTimeout(timeout);
     if (m_serialPort->open(QIODevice::ReadWrite))
@@ -134,23 +135,26 @@ const char *SerialWorker::getLastErrorMsg() const
 
 void SerialWorker::doDataSendWork(const QByteArray data)
 {
-//    qDebug() <<  "子线程槽函数发送数据：" << data << "线程ID：" << QThread::currentThreadId();
-    // 发送数据
-    m_serialPort->write(data);
-    m_serialPort->flush();
+    if(m_serialPort->isWritable()){
+        //qDebug() <<  "子线程槽函数发送数据：" << data << "线程ID：" << QThread::currentThreadId();
+        // 发送数据
+        m_serialPort->write(data);
+        m_serialPort->flush();
+        m_serialPort->waitForBytesWritten(100);
+    }else{
+        qDebug() << "Couldn't write to serial!";
+    }
+
 }
 
 void SerialWorker::doDataReciveWork()
 {
-//    if (m_serialPort->waitForReadyRead(m_iTimeout)) {
         // 1.收到数据
         QByteArray buffer = m_serialPort->readAll();
+        qDebug() <<  "Tread received" << buffer << "ThreadID:" << QThread::currentThreadId();
 
         // 2.进行数据处理
-//        QString resultStr = buffer;
-//        qDebug() <<  "子线程收到数据：" << resultStr << "线程ID：" << QThread::currentThreadId();
 
         // 3.将结果发送到主线程
         emit sendResultToGui(buffer);
-//    }
 }

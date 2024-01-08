@@ -914,8 +914,8 @@ background-color: rgb(0, 85, 127);</string>
   <widget class="QPushButton" name="pushButton_openPortArduino">
    <property name="geometry">
     <rect>
-     <x>170</x>
-     <y>960</y>
+     <x>190</x>
+     <y>20</y>
      <width>89</width>
      <height>24</height>
     </rect>

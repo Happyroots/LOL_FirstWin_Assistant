@@ -48,25 +48,12 @@ void SerialWorkerP::requestData(int iAddress)
     QByteArray byteArray = m_cBridge_ZL->generateQueryMessage(iAddress);
     if(is_open())
         doDataSendWork( byteArray );
-
-//    m_thread->msleep(200); //数据容易没，效果也不好
-//    m_serialPort->flush();
-//    //半双工
-//    if(m_serialPort->bytesAvailable() <= 0) {
-//           return;
-//     }
-//    QByteArray requestedData;
-//    if(is_open()){
-//            requestedData =  m_serialPort->readAll();
-//            qDebug() << requestedData; //一次读了好几条数据
-//    }
-//    if (requestedData.isEmpty()) return;
-//    m_cBridge_ZL->parseData(requestedData);
 }
 
 #include <QDebug>
 void SerialWorkerP::requestData()
 {
+    //半双工
     requestData(0x05);
     m_thread->msleep(200);
 //    requestData(0x06);
@@ -102,34 +89,30 @@ void SerialWorkerP::requestData()
 //        m_cBridge_ZL->parseData(requestedData);
 //    }
 
-    emit sendBridgeDataToGui(m_cBridge_ZL->m_sValuesBridge);
 }
 
 
 void SerialWorkerP::doDataReciveWork()
 {
-        // 1.收到数据
+    // 1.收到数据
 //    QByteArray buffer = m_serialPort->readAll();
 //    m_thread->usleep(100); //数据容易没，效果也不好
     QByteArray buffer;
     buffer = m_serialPort->read(7); // 读取 7 个字节的数据
-    qDebug() <<  "Tread received" << buffer << "ThreadID:" << QThread::currentThreadId();
+//    qDebug() <<  "Tread received" << buffer << "ThreadID:" << QThread::currentThreadId();
     // 2.进行数据处理
     //1.等待一会，看看能收全不,
     //2.可能是线松了，没信号
     //3.先上电，等几分钟？再插串口，还是反着？
     //4.是不是设备性能不好？
     m_serialPort->flush();
-    //半双工
-//        if(m_serialPort->bytesAvailable() <= 0) {
-//               return;
-//         }
+
     QByteArray requestedData = buffer;
 
     if (requestedData.isEmpty()) return;
     m_cBridge_ZL->parseData(requestedData);
+// 立刻发送到界面线程，降低延迟
+    emit sendBridgeDataToGui(m_cBridge_ZL->m_sValuesBridge);
 
-    // 3.将结果发送到主线程
-//        emit sendResultToGui(buffer);
 }
 

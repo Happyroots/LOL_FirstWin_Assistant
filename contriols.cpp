@@ -66,8 +66,10 @@ void Contriols::On_receive_DTU(QByteArray tmpdata)
 void Contriols::On_receive_RudderBell(Bridge_ZL::Values_Bridge data_RudderBell)
 {
     m_iCmdPropeller = -data_RudderBell.valueBellLeft;
+    m_iCmdPropeller *= 10;
     m_iCmdPropeller += m_iBias_cmd_prop;
-    m_iCmdPropeller = (m_iCmdPropeller + 1) / 2 * 2;;
+    m_iCmdPropeller = (m_iCmdPropeller + 5) / 10 * 10;
+
     m_iCmdRudder = -data_RudderBell.valueRudder;
     m_iCmdRudder += m_iBias_cmd_rudder;
     m_iCmdRudder = (m_iCmdRudder + 2) / 5 * 5;
@@ -99,12 +101,12 @@ void Contriols::sendCmdToShip(){
 #ifdef TESTING_MODE
     QByteArray msgArduino;
     msgArduino.resize(10);
-    int written = qsnprintf(msgArduino.data(), msgArduino.size(), "S%dM%dE", m_iCmdRudder, m_iCmdPropeller);
+    int written = qsnprintf(msgArduino.data(), msgArduino.size(), "S%dM%dE", m_iCmdPropeller, m_iCmdRudder);
     if (written > -1) {
         msgArduino.resize(written);
-        qDebug() << "Formatted message:" << msgArduino;
+//        qDebug() << "Formatted message:" << msgArduino;
     } else {
-        qDebug() << "Error while formatting message.";
+//        /qDebug() << "Error while formatting message.";
     }
     emit m_signalSendCmdToArduino(msgArduino);
 #else
@@ -387,25 +389,23 @@ void Contriols::on_pushButton_openPortArduino_clicked()
 
         if (ui->comboBox_port->count() > 0)///当前列表的内容个数
         {///打开串口操作
-            int SelBaudRate=115200;
-            m_cSerialArduino = new SerialWorkerP(ui->comboBox_port->currentText().toStdString().c_str(),
+            int SelBaudRate=38400;
+            m_cSerialArduino = new SerialWorker(ui->comboBox_port->currentText().toStdString().c_str(),
                                                   SelBaudRate,
                                                   QSerialPort::NoParity,
                                                   QSerialPort::Data8,
                                                   QSerialPort::OneStop,
                                                   QSerialPort::NoFlowControl,
                                                   500);
-//            qRegisterMetaType<Bridge_ZL::Values_Bridge>("Bridge_ZL::Values_Bridge");
-//            connect(m_SerialWorker_RudderBell, SIGNAL(sendBridgeDataToGui(Bridge_ZL::Values_Bridge)), this, SLOT(On_receive_RudderBell(Bridge_ZL::Values_Bridge)), Qt::QueuedConnection);
-            connect(this, SIGNAL(m_signalSendCmdToArduino(QByteArray)), m_SerialWorker_DTU, SLOT(doDataSendWork(const QByteArray)), Qt::QueuedConnection);
-            connect(this, SIGNAL(closeSerialPort_Arduino()), m_SerialWorker_RudderBell, SLOT(close()), Qt::QueuedConnection);
+            connect(this, SIGNAL(m_signalSendCmdToArduino(QByteArray)), m_cSerialArduino, SLOT(doDataSendWork(const QByteArray)), Qt::QueuedConnection);
+            connect(this, SIGNAL(closeSerialPort_Arduino()), m_cSerialArduino, SLOT(close()), Qt::QueuedConnection);
             m_cSerialArduino->start();
             if(m_cSerialArduino->is_open())
             {
                 ui->pushButton_openPortArduino->setText(tr("关闭Arduino"));        }
             else
             {
-            QMessageBox::information(NULL,tr("information"),tr("open port error") + QString("\n\ncode: %1\nmessage: %2").arg(pushButton_openPortArduino->getLastError()).arg(pushButton_openPortArduino->getLastErrorMsg()));
+            QMessageBox::information(NULL,tr("information"),tr("open port error") + QString("\n\ncode: %1\nmessage: %2").arg(m_cSerialArduino->getLastError()).arg(m_cSerialArduino->getLastErrorMsg()));
                 ui->pushButton_openPortArduino->setText(tr("打开Arduino"));
                 qDebug()<< m_cSerialArduino->getLastError();
             }
