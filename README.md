@@ -6,7 +6,10 @@
 #### 软件架构
 软件架构说明
 
-
+#### 打包命令
+```c++
+E:\Qt\Qt5.12.12\5.12.12\mingw73_64\bin\windeployqt.exe LandTerminal.exe
+```
 #### 安装教程
 
 1.  xxxx

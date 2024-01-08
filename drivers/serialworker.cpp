@@ -93,7 +93,7 @@ void SerialWorker::init(const QString portName,
     m_serialPort->setParity(parity);              //奇偶校验
     m_serialPort->setFlowControl(flowControl);    //流控制
     m_serialPort->setReadBufferSize(300);
-    m_serialPort->setDataTerminalReady(true);
+//    m_serialPort->setDataTerminalReady(true);
     m_iTimeout = ReadIntervalTimeout;
 //    m_serialPort->setReadIntervalTimeout(timeout);
     if (m_serialPort->open(QIODevice::ReadWrite))
@@ -149,7 +149,9 @@ void SerialWorker::doDataSendWork(const QByteArray data)
 
 void SerialWorker::doDataReciveWork()
 {
+
         // 1.收到数据
+        m_thread->msleep(10);
         QByteArray buffer = m_serialPort->readAll();
         qDebug() <<  "Tread received" << buffer << "ThreadID:" << QThread::currentThreadId();
 

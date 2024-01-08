@@ -203,7 +203,7 @@ void DashboardCourseSpeed::drawNumericValue(QPainter *painter)
 void DashboardCourseSpeed::UpdateAngle(double value)
 {
     m_value = value;
-    m_value = fmod(fmod(m_value, 360.0) + 360.0, 360.0);
+//    m_value = fmod(fmod(m_value, 360.0) + 360.0, 360.0);
 
     QWidget::update();
 }

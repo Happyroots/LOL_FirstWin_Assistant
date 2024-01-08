@@ -37,6 +37,6 @@ include($$PWD/driver_dtu.pri)
 RESOURCES += \
     resource.qrc
 
-#DEFINES += TESTING_MODE
+DEFINES += TESTING_MODE
 
 
