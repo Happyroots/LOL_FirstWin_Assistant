@@ -184,14 +184,14 @@ void DashboardCourseSpeed::drawIndicator(QPainter *painter)
 void DashboardCourseSpeed::drawNumericValue(QPainter *painter)
 {
     QString valueString = QString::number(m_value).rightJustified(3, '0');
-    QString precisionString = QString::number(m_value, 'f', m_precision);
+    QString precisionString = QString::number(m_value, 'f', 1);
 
     // 检查是否有小数部分，如果没有则手动添加小数点和零
     if (precisionString.indexOf('.') == -1) {
         precisionString += ".0";
     }
 
-    QString str = valueString + precisionString.mid(precisionString.indexOf('.')) + m_units;
+    QString str = precisionString + m_units;
 
     //    QString str = QString("%1%2").arg(m_value, 0, 'f', m_precision).arg(m_units);
     QFontMetricsF fm(font());

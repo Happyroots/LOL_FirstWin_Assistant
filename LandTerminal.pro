@@ -29,14 +29,16 @@ qnx: target.path = /tmp/$${TARGET}/bin
 else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
 
-#include(dtu_arduino_driver.pri)
 include($$PWD/utils.pri )
 include($$PWD/driver_RudderBellZL.pri)
 include($$PWD/driver_dtu.pri)
+include($$PWD/cotrols_overide.pri)
+include($$PWD/algorithms.pri)
+
 
 RESOURCES += \
     resource.qrc
 
-DEFINES += TESTING_MODE
+#DEFINES += TESTING_MODE
 
 

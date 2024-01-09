@@ -19,6 +19,7 @@
 #include "drivers/serialworkerp.h"
 #include "drivers/bridge_zl.h"
 #include "drivers/serialworker.h"
+#include "algorithms/ZLControl.h"
 
 namespace Ui {
 class Contriols;
@@ -45,6 +46,7 @@ public:
     QByteArray m_QSreceivedData;
     SerialWorkerP *m_SerialWorker_RudderBell;
     Bridge_ZL::Values_Bridge m_sValues_Bridge;
+    ZLControl m_cAlgorithm_control;
 
 signals:
     void m_signalSendCmdToShip(const QByteArray data);

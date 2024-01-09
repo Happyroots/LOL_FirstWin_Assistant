@@ -42,7 +42,7 @@ private:
     int m_scaleMajor;
     int m_scaleMinor;
     double m_value;
-    int m_precision;
+    int m_precision = 1;
     QTimer *m_updateTimer;
     QString m_units;
     QString m_title;

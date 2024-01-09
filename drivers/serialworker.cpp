@@ -151,7 +151,7 @@ void SerialWorker::doDataReciveWork()
 {
 
         // 1.收到数据
-        m_thread->msleep(10);
+        m_thread->msleep(200);
         QByteArray buffer = m_serialPort->readAll();
         qDebug() <<  "Tread received" << buffer << "ThreadID:" << QThread::currentThreadId();
 

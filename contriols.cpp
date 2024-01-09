@@ -10,7 +10,6 @@
 #include <QPainter>
 #include <QSerialPortInfo>
 
-
 Contriols::Contriols(QWidget *parent) :
     QWidget(parent),
     ui(new Ui::Contriols)
@@ -157,7 +156,8 @@ void Contriols::parseData(QByteArray newData)
         }
     }
 //    qDebug() << "after process" << newData;
-
+//    分成4条发送怎么办？/
+//    m_QSreceivedData += newData;
     // 去除空串，并把含有信息但没有标识符的部分拼接到最后一个包中
     if (newData.isEmpty()) {
         newData = "";
@@ -181,8 +181,8 @@ void Contriols::processData(const QByteArray& qbytearray){
 
 //        qDebug() << "SX: " << sxNumber << " Long: " << lNumber << " Lat: " << aNumber;
         // 将输出语句修改为保存sxNumber、lNumber和aNumber的值
-        ui->lineEdit_longtitude->setText(QString::number(lNumber));
-        ui->lineEdit_latitude->setText(QString::number(aNumber));
+        ui->lineEdit_longtitude->setText(QString::number(lNumber, 'f', 6));
+        ui->lineEdit_latitude->setText(QString::number(aNumber, 'f', 6));
         qreal velocity_abs = caculate_velocity_abs(lNumber, aNumber);
         ui->lineEdit_abV_m->setText(QString::number( velocity_abs, 'f', 2));
         ui->lineEdit_abV_kn->setText(QString::number( velocity_abs*1.94384, 'f', 1));
@@ -195,6 +195,26 @@ void Contriols::processData(const QByteArray& qbytearray){
             stream << currentTime << "," << QString::number(sxNumber, 'f', 6) << ","
                    << QString::number(lNumber, 'f', 6) << "," << QString::number(aNumber, 'f', 6) << "\n";
             logFile->close();
+        }
+
+        {
+            //期望点
+            //添加期望点test m_cAlgorithm_control.AddPoint(lat,lon);
+//            m_cAlgorithm_control.AddPoints(121.534996, 38.865784);
+//            m_cAlgorithm_control.AddPoints(121.534683, 38.865903);
+//            m_cAlgorithm_control.AddPoints(121.534531, 38.865887);
+//            m_cAlgorithm_control.AddPoints(121.534760, 38.865757);
+
+//            ZLControl::GPSPoint GPS1(lNumber,aNumber);
+//            //GPS1.lon=lNumber;
+//            //GPS1.lat=aNumber;
+//            ZLControl::ControlInfo CIF;
+//            CIF =  m_cAlgorithm_control.CalMainTest(GPS1, sxNumber);
+//            m_iCmdRudder = CIF.DeltaE + m_iBias_cmd_rudder;
+//            m_iCmdPropeller = CIF.PropE + m_iBias_cmd_prop - 30;
+//            qDebug()<<"Rud:"<<CIF.DeltaE;
+//            qDebug()<<"Prop:"<<CIF.PropE;
+//            sendCmdToShip();
         }
 
     }
