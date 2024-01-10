@@ -53,7 +53,7 @@
    <property name="geometry">
     <rect>
      <x>0</x>
-     <y>60</y>
+     <y>50</y>
      <width>277</width>
      <height>41</height>
     </rect>
@@ -836,7 +836,7 @@ color: rgb(0, 0, 0);</string>
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>275</width>
+     <width>270</width>
      <height>620</height>
     </rect>
    </property>
@@ -924,62 +924,35 @@ background-color: rgb(0, 85, 127);</string>
     <string>打开Arduino</string>
    </property>
   </widget>
-  <widget class="QWidget" name="layoutWidget">
+  <widget class="QLabel" name="label_17">
    <property name="geometry">
     <rect>
-     <x>10</x>
+     <x>0</x>
      <y>100</y>
-     <width>241</width>
-     <height>26</height>
+     <width>61</width>
+     <height>24</height>
     </rect>
    </property>
-   <layout class="QHBoxLayout" name="horizontalLayout_2">
-    <item>
-     <widget class="QLabel" name="label_stateControl">
-      <property name="styleSheet">
-       <string notr="true">color: rgb(255, 255, 255);</string>
-      </property>
-      <property name="text">
-       <string>自主航行</string>
-      </property>
-     </widget>
-    </item>
-    <item>
-     <spacer name="horizontalSpacer_4">
-      <property name="orientation">
-       <enum>Qt::Horizontal</enum>
-      </property>
-      <property name="sizeHint" stdset="0">
-       <size>
-        <width>40</width>
-        <height>20</height>
-       </size>
-      </property>
-     </spacer>
-    </item>
-    <item>
-     <spacer name="horizontalSpacer_5">
-      <property name="orientation">
-       <enum>Qt::Horizontal</enum>
-      </property>
-      <property name="sizeHint" stdset="0">
-       <size>
-        <width>40</width>
-        <height>20</height>
-       </size>
-      </property>
-     </spacer>
-    </item>
-    <item>
-     <widget class="QPushButton" name="pushButton_stateControl">
-      <property name="text">
-       <string>PushButton</string>
-      </property>
-     </widget>
-    </item>
-   </layout>
+   <property name="styleSheet">
+    <string notr="true">color: rgb(255, 255, 255);</string>
+   </property>
+   <property name="text">
+    <string>自主航行</string>
+   </property>
   </widget>
-  <zorder>layoutWidget</zorder>
+  <widget class="PushButton_SwitchAPPLE" name="pushButton">
+   <property name="geometry">
+    <rect>
+     <x>188</x>
+     <y>100</y>
+     <width>61</width>
+     <height>24</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>PushButton</string>
+   </property>
+  </widget>
   <zorder>label_12</zorder>
   <zorder>label</zorder>
   <zorder>horizontalLayoutWidget</zorder>
@@ -996,13 +969,20 @@ background-color: rgb(0, 85, 127);</string>
   <zorder>line_3</zorder>
   <zorder>widget_DashboardCourseSpeed</zorder>
   <zorder>pushButton_openPortArduino</zorder>
+  <zorder>label_17</zorder>
+  <zorder>pushButton</zorder>
  </widget>
  <customwidgets>
   <customwidget>
    <class>DashboardCourseSpeed</class>
    <extends>QWidget</extends>
-   <header>dashboardcoursespeed.h</header>
+   <header>cotrols_overide/dashboardcoursespeed.h</header>
    <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>PushButton_SwitchAPPLE</class>
+   <extends>QPushButton</extends>
+   <header>cotrols_overide/pushbutton_switchapple.h</header>
   </customwidget>
  </customwidgets>
  <resources/>

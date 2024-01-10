@@ -100,7 +100,7 @@ public:
 
     qreal m_s2kn = 1.9438445;
     qreal cmd2velocity = 0.0255;
-    QFile *logFile;
+    QFile *logFile = nullptr;
     TimeDuration timeDuration;
     void keyPressEvent(QKeyEvent *event) override;
 #ifdef TESTING_MODE

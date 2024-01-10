@@ -37,7 +37,7 @@ Contriols::Contriols(QWidget *parent) :
     QString logFileName = QDateTime::currentDateTime().toString("yyyy-MM-dd--hh:mm:ss");
 
     // 创建并打开日志文件，如果文件已经存在，会被清空
-    logFile = new QFile(logFileName);
+//    logFile = new QFile(logFileName);
     if (logFile->open(QIODevice::WriteOnly | QIODevice::Text))
     {
         QTextStream stream(logFile);
@@ -63,7 +63,7 @@ Contriols::~Contriols()
     if(!m_SerialWorker_DTU) {
         delete m_SerialWorker_DTU; m_SerialWorker_DTU = nullptr;
     }
-    delete logFile;
+    logFile->close(); if(logFile) delete logFile;
 }
 
 void Contriols::On_receive_DTU(QByteArray tmpdata)
@@ -93,16 +93,16 @@ void Contriols::On_receive_RudderBell(Bridge_ZL::Values_Bridge data_RudderBell)
 
 
 void Contriols::sendCmdToShip(){
+    QString formattedString_cmd = QString("S%1,%2E").arg(m_iCmdRudder).arg(m_iCmdPropeller);
+    QByteArray byteArray_cmd = formattedString_cmd.toUtf8();
+    ui->lineEdit_rudder->setText(QString::number(m_iCmdRudder - m_iBias_cmd_rudder));
+    ui->lineEdit_propeller->setText(QString::number(m_iCmdPropeller - m_iBias_cmd_prop));
+
+    qreal velocity_reV_m = (m_iCmdPropeller - m_iBias_cmd_prop) * cmd2velocity;
+    ui->lineEdit_reV_m->setText(QString::number(velocity_reV_m, 'f', 2));
+    ui->lineEdit_reV_kn->setText(QString::number( velocity_reV_m * m_s2kn, 'f', 1));
+
     if(m_SerialWorker_DTU){
-        QString formattedString_cmd = QString("S%1,%2E").arg(m_iCmdRudder).arg(m_iCmdPropeller);
-        QByteArray byteArray_cmd = formattedString_cmd.toUtf8();
-        ui->lineEdit_rudder->setText(QString::number(m_iCmdRudder - m_iBias_cmd_rudder));
-        ui->lineEdit_propeller->setText(QString::number(m_iCmdPropeller - m_iBias_cmd_prop));
-
-        qreal velocity_reV_m = (m_iCmdPropeller - m_iBias_cmd_prop) * cmd2velocity;
-        ui->lineEdit_reV_m->setText(QString::number(velocity_reV_m, 'f', 2));
-        ui->lineEdit_reV_kn->setText(QString::number( velocity_reV_m * m_s2kn, 'f', 1));
-
         emit m_signalSendCmdToShip(byteArray_cmd);
     }
 

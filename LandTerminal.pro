@@ -10,18 +10,15 @@ CONFIG += c++17
 
 SOURCES += \
     contriols.cpp \
-    dashboardcoursespeed.cpp \
     main.cpp \
     mainwindow.cpp
 
 HEADERS += \
     contriols.h \
-    dashboardcoursespeed.h \
     mainwindow.h
 
 FORMS += \
     contriols.ui \
-    dashboardcoursespeed.ui \
     mainwindow.ui \
 
 # Default rules for deployment.
