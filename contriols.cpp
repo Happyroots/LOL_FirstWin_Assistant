@@ -37,7 +37,7 @@ Contriols::Contriols(QWidget *parent) :
     QString logFileName = QDateTime::currentDateTime().toString("yyyy-MM-dd--hh:mm:ss");
 
     // 创建并打开日志文件，如果文件已经存在，会被清空
-//    logFile = new QFile(logFileName);
+    logFile = new QFile(logFileName);
     if (logFile->open(QIODevice::WriteOnly | QIODevice::Text))
     {
         QTextStream stream(logFile);
@@ -93,10 +93,11 @@ void Contriols::On_receive_RudderBell(Bridge_ZL::Values_Bridge data_RudderBell)
 
 
 void Contriols::sendCmdToShip(){
-    QString formattedString_cmd = QString("S%1,%2E").arg(m_iCmdRudder).arg(m_iCmdPropeller);
+    QString formattedString_cmd = QString("S%1,%2,%3E").arg(m_iCmdRudder).arg(m_iCmdPropeller).arg(m_iCmdSideThuster);
     QByteArray byteArray_cmd = formattedString_cmd.toUtf8();
     ui->lineEdit_rudder->setText(QString::number(m_iCmdRudder - m_iBias_cmd_rudder));
     ui->lineEdit_propeller->setText(QString::number(m_iCmdPropeller - m_iBias_cmd_prop));
+    ui->lineEdit_sideThruster->setText(QString::number(m_iCmdSideThuster - m_iBias_cmd_prop));
 
     qreal velocity_reV_m = (m_iCmdPropeller - m_iBias_cmd_prop) * cmd2velocity;
     ui->lineEdit_reV_m->setText(QString::number(velocity_reV_m, 'f', 2));
@@ -296,7 +297,20 @@ void Contriols::on_pushButton_CmdRight_clicked()
     sendCmdToShip();
 }
 
+void Contriols::on_pushButton_CmdLeftThruster_clicked()
+{
+    m_iCmdSideThuster -= m_iStepPropellar;
+    if(m_iCmdSideThuster < -100 + m_iBias_cmd_prop) m_iCmdSideThuster += m_iStepPropellar;
+    sendCmdToShip();
+}
 
+
+void Contriols::on_pushButton_CmdRightThruster_clicked()
+{
+    m_iCmdSideThuster += m_iStepPropellar;
+    if(m_iCmdSideThuster > 100 + m_iBias_cmd_prop) m_iCmdSideThuster -= m_iStepPropellar;
+    sendCmdToShip();
+}
 
 
 
@@ -362,6 +376,14 @@ void Contriols::keyPressEvent(QKeyEvent *event)
     else if(event->key() == Qt::Key_D)
     {
         on_pushButton_CmdRight_clicked();
+    }
+    else if(event->key() == Qt::Key_Q)
+    {
+        on_pushButton_CmdLeftThruster_clicked();
+    }
+    else if(event->key() == Qt::Key_E)
+    {
+        on_pushButton_CmdRightThruster_clicked();
     }
 }
 
@@ -453,3 +475,6 @@ void Contriols::on_pushButton_openPortArduino_clicked()
 }
 
 #endif
+
+
+

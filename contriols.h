@@ -39,6 +39,7 @@ public:
     int m_iBias_cmd_prop = 100;
     int m_iCmdRudder = m_iBias_cmd_rudder;
     int m_iCmdPropeller = m_iBias_cmd_prop;
+    int m_iCmdSideThuster = m_iBias_cmd_prop;
     int m_iStepPropellar = 5;
     int m_iStepRudder = 5;
 
@@ -82,6 +83,10 @@ private slots:
 #ifdef TESTING_MODE
     void on_pushButton_openPortArduino_clicked();
 #endif
+
+    void on_pushButton_CmdLeftThruster_clicked();
+
+    void on_pushButton_CmdRightThruster_clicked();
 
 private:
     Ui::Contriols *ui;
