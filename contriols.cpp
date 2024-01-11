@@ -37,7 +37,7 @@ Contriols::Contriols(QWidget *parent) :
     QString logFileName = QDateTime::currentDateTime().toString("yyyy-MM-dd--hh:mm:ss");
 
     // 创建并打开日志文件，如果文件已经存在，会被清空
-//    logFile = new QFile(logFileName);
+    logFile = new QFile(logFileName);
     if (logFile->open(QIODevice::WriteOnly | QIODevice::Text))
     {
         QTextStream stream(logFile);
