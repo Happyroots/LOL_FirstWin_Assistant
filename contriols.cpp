@@ -34,14 +34,15 @@ Contriols::Contriols(QWidget *parent) :
     //connect(updateTimer, &QTimer::timeout, this, &Contriols::onUpdateTimerTimeout);
     updateTimer->start(2000); // 每100毫秒触发一次定时器
 
-    QString logFileName = QDateTime::currentDateTime().toString("yyyy-MM-dd--hh:mm:ss");
-
+    QString logFileName = QDateTime::currentDateTime().toString("yyyy-MM-dd--hh_mm_ss");
+    logFileName += ".csv";
     // 创建并打开日志文件，如果文件已经存在，会被清空
     logFile = new QFile(logFileName);
     if (logFile->open(QIODevice::WriteOnly | QIODevice::Text))
     {
         QTextStream stream(logFile);
         stream << "Time,SXNumber,LNumber,ANumber\n";
+
     }
 
     connect_clicked();
@@ -55,15 +56,16 @@ Contriols::Contriols(QWidget *parent) :
     ui->pushButton_openPortArduino->setVisible(false);
 #endif
 
+    ui->pushButton_switchControl->rl_flag = m_bIsControl;
+    ui->pushButton_switchControl->update();
+    connect(ui->pushButton_switchControl, SIGNAL(syncStatusControl(bool)), this, SLOT(On_receive_pushButton_switchControl(bool)));
 }
 
 Contriols::~Contriols()
 {
-    delete ui;
-    if(!m_SerialWorker_DTU) {
-        delete m_SerialWorker_DTU; m_SerialWorker_DTU = nullptr;
-    }
-    logFile->close(); if(logFile) delete logFile;
+    delete ui; ui = nullptr;
+    if(!m_SerialWorker_DTU) delete m_SerialWorker_DTU; m_SerialWorker_DTU = nullptr;
+    if(logFile->isOpen())logFile->close(); if(logFile) delete logFile; logFile = nullptr;
 }
 
 void Contriols::On_receive_DTU(QByteArray tmpdata)
@@ -189,33 +191,37 @@ void Contriols::processData(const QByteArray& qbytearray){
         ui->lineEdit_abV_kn->setText(QString::number( velocity_abs*1.94384, 'f', 1));
         if (sxNumber < 0) sxNumber += 360;
         emit update_DashboardCourseSpeed(sxNumber); //
-        if (logFile->open(QIODevice::Append | QIODevice::Text))
+//        if (logFile->open(QIODevice::Append | QIODevice::Text))
+        if(logFile->isOpen())
         {
             QTextStream stream(logFile);
 //            stream << currentTime << "," << sxNumber << "," << lNumber << "," << aNumber << "\n";
             stream << currentTime << "," << QString::number(sxNumber, 'f', 6) << ","
                    << QString::number(lNumber, 'f', 6) << "," << QString::number(aNumber, 'f', 6) << "\n";
-            logFile->close();
+//            logFile->close();
         }
 
         {
             //期望点
             //添加期望点test m_cAlgorithm_control.AddPoint(lat,lon);
-//            m_cAlgorithm_control.AddPoints(121.534996, 38.865784);
-//            m_cAlgorithm_control.AddPoints(121.534683, 38.865903);
-//            m_cAlgorithm_control.AddPoints(121.534531, 38.865887);
-//            m_cAlgorithm_control.AddPoints(121.534760, 38.865757);
+            if(m_bIsControl) {
+                m_cAlgorithm_control.AddPoints(121.534996, 38.865784);
+                m_cAlgorithm_control.AddPoints(121.534683, 38.865903);
+                m_cAlgorithm_control.AddPoints(121.534531, 38.865887);
+                m_cAlgorithm_control.AddPoints(121.534760, 38.865757);
 
-//            ZLControl::GPSPoint GPS1(lNumber,aNumber);
-//            //GPS1.lon=lNumber;
-//            //GPS1.lat=aNumber;
-//            ZLControl::ControlInfo CIF;
-//            CIF =  m_cAlgorithm_control.CalMainTest(GPS1, sxNumber);
-//            m_iCmdRudder = CIF.DeltaE + m_iBias_cmd_rudder;
-//            m_iCmdPropeller = CIF.PropE + m_iBias_cmd_prop - 30;
-//            qDebug()<<"Rud:"<<CIF.DeltaE;
-//            qDebug()<<"Prop:"<<CIF.PropE;
-//            sendCmdToShip();
+                ZLControl::GPSPoint GPS1(lNumber,aNumber);
+                //GPS1.lon=lNumber;
+                //GPS1.lat=aNumber;
+                ZLControl::ControlInfo CIF;
+                CIF =  m_cAlgorithm_control.CalMainTest(GPS1, sxNumber);
+                m_iCmdRudder = CIF.DeltaE + m_iBias_cmd_rudder;
+                m_iCmdPropeller = CIF.PropE + m_iBias_cmd_prop - 30;
+                qDebug()<<"Rud:"<<CIF.DeltaE;
+                qDebug()<<"Prop:"<<CIF.PropE;
+                sendCmdToShip();
+
+            }
         }
 
     }
@@ -477,4 +483,8 @@ void Contriols::on_pushButton_openPortArduino_clicked()
 #endif
 
 
+void Contriols::On_receive_pushButton_switchControl(bool rl_flag)
+{
+    m_bIsControl = rl_flag;
+}
 

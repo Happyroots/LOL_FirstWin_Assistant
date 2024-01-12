@@ -88,11 +88,12 @@ private slots:
 
     void on_pushButton_CmdRightThruster_clicked();
 
+    void On_receive_pushButton_switchControl(bool);
 private:
-    Ui::Contriols *ui;
+    Ui::Contriols *ui = nullptr;
     // 添加一个用于存储轨迹点的容器
     QVector<QPointF> trackPoints;
-    QTimer *updateTimer;
+    QTimer *updateTimer = nullptr;
 
 public:
     qreal sxNumber;
@@ -108,8 +109,10 @@ public:
     QFile *logFile = nullptr;
     TimeDuration timeDuration;
     void keyPressEvent(QKeyEvent *event) override;
+    bool m_bIsControl = false;
+
 #ifdef TESTING_MODE
-    SerialWorker *m_cSerialArduino;
+    SerialWorker *m_cSerialArduino = nullptr;
 #endif
 };
 

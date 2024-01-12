@@ -26,7 +26,8 @@ public:
     void timeOut(int x);
     void drawSpan(QPainter painter,int s);
 
-
+signals :
+    void syncStatusControl(bool rl_flag);
 };
 
 #endif // PUSHBUTTON_SWITCHAPPLE_H
