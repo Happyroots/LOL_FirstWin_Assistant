@@ -12,7 +12,7 @@ SerialWorker::SerialWorker(QObject *parent)
 //    init_port();
     this->moveToThread(m_thread);
     m_serialPort->moveToThread(m_thread);
-    m_thread->start();  //启动线程
+//    m_thread->start();  //启动线程
 }
 
 SerialWorker::SerialWorker(

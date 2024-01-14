@@ -37,5 +37,5 @@ RESOURCES += \
     resource.qrc
 
 #DEFINES += TESTING_MODE
-
+#DEFINES += REPLAY_MODE
 

@@ -3,5 +3,6 @@
         <file>Images/cs.png</file>
         <file>Images/bg.png</file>
         <file>config/config_bridge_ZL.json</file>
+        <file>README.md</file>
     </qresource>
 </RCC>

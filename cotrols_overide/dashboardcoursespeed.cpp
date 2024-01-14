@@ -19,11 +19,12 @@ DashboardCourseSpeed::DashboardCourseSpeed(QWidget *parent) :
     m_scaleMajor = 360 / 30;//分度
     m_scaleMinor = 10;
     m_units = "°";
-    m_title = "Course";
+    m_title = "heading";
     m_precision = 1;
     m_value = 0;
 
-//    m_updateTimer = new QTimer(this);
+    //this,创建多线程时不要在类中new this参数，会警告
+//    m_updateTimer = new QTimer();
 //    m_updateTimer->setInterval(50);//间隔，微妙微单位，大家可以改一下这个值看看转动速度。
 //    connect(m_updateTimer, SIGNAL(timeout()), this, SLOT(UpdateAngle()));
 //    m_updateTimer->start();//启动定时器

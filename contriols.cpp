@@ -30,12 +30,12 @@ Contriols::Contriols(QWidget *parent) :
     }
 
     // 初始化定时器
-    updateTimer = new QTimer(this);
+//    updateTimer = new QTimer(this);
     //connect(updateTimer, &QTimer::timeout, this, &Contriols::onUpdateTimerTimeout);
-    updateTimer->start(2000); // 每100毫秒触发一次定时器
+//    updateTimer->start(2000); // 每100毫秒触发一次定时器
 
     QString logFileName = QDateTime::currentDateTime().toString("yyyy-MM-dd--hh_mm_ss");
-    logFileName += ".csv";
+    logFileName += "-LandTerminal.csv";
     // 创建并打开日志文件，如果文件已经存在，会被清空
     logFile = new QFile(logFileName);
     if (logFile->open(QIODevice::WriteOnly | QIODevice::Text))
@@ -51,6 +51,11 @@ Contriols::Contriols(QWidget *parent) :
 
 
 #ifdef TESTING_MODE
+    m_updateTimer = new QTimer(this);
+    m_updateTimer->setInterval(50);//间隔，微妙微单位，大家可以改一下这个值看看转动速度。
+    connect(m_updateTimer, SIGNAL(timeout()), this, SLOT(UpdateGPS()));
+    m_updateTimer->start();//启动定时器
+
 #else
     ui->pushButton_openPortArduino->setEnabled(false);
     ui->pushButton_openPortArduino->setVisible(false);
@@ -59,6 +64,16 @@ Contriols::Contriols(QWidget *parent) :
     ui->pushButton_switchControl->rl_flag = m_bIsControl;
     ui->pushButton_switchControl->update();
     connect(ui->pushButton_switchControl, SIGNAL(syncStatusControl(bool)), this, SLOT(On_receive_pushButton_switchControl(bool)));
+
+    m_cUDPSocket = new UDPSocket("255.255.255.255", 8001);
+    connect(this, SIGNAL(m_signalSendGPSToSimulator(QString)), m_cUDPSocket, SLOT(sendData(QString)));
+#ifdef REPLAY_MODE
+    m_pDumpData = new DUMPData();
+    connect(m_pDumpData, SIGNAL(sendRecordedDataToGUI(QByteArray)), this, SLOT(On_receive_RecordedData(QByteArray)));
+    connect(m_pDumpData, SIGNAL(endRecordedDataToGUI()), this, SLOT(On_receive_RecordedData_end()));
+
+#endif
+
 }
 
 Contriols::~Contriols()
@@ -75,15 +90,18 @@ void Contriols::On_receive_DTU(QByteArray tmpdata)
 
 void Contriols::On_receive_RudderBell(Bridge_ZL::Values_Bridge data_RudderBell)
 {
-    m_iCmdPropeller = -data_RudderBell.valueBellLeft;
-    m_iCmdPropeller *= 10;
-    m_iCmdPropeller += m_iBias_cmd_prop;
-    m_iCmdPropeller = (m_iCmdPropeller + 5) / 10 * 10;
+    if(m_iCmdRudder - m_iBias_cmd_rudder != -data_RudderBell.valueRudder  ||
+            m_iCmdPropeller - m_iBias_cmd_prop != -data_RudderBell.valueBellLeft) {
+        m_iCmdPropeller = -data_RudderBell.valueBellLeft;
+        m_iCmdPropeller *= 10;
+        m_iCmdPropeller += m_iBias_cmd_prop;
+        m_iCmdPropeller = (m_iCmdPropeller + 5) / 10 * 10;
 
-    m_iCmdRudder = -data_RudderBell.valueRudder;
-    m_iCmdRudder += m_iBias_cmd_rudder;
-    m_iCmdRudder = (m_iCmdRudder + 2) / 5 * 5;
-    sendCmdToShip();
+        m_iCmdRudder = -data_RudderBell.valueRudder;
+        m_iCmdRudder += m_iBias_cmd_rudder;
+        m_iCmdRudder = (m_iCmdRudder + 2) / 5 * 5;
+        sendCmdToShip();
+    }
 
 #ifdef TESTING_MODE
 
@@ -159,7 +177,9 @@ void Contriols::parseData(QByteArray newData)
         }
     }
 //    qDebug() << "after process" << newData;
-//    分成4条发送怎么办？/
+
+//   分成4条发送怎么办？ 收数据的时候等待，收全
+
 //    m_QSreceivedData += newData;
     // 去除空串，并把含有信息但没有标识符的部分拼接到最后一个包中
     if (newData.isEmpty()) {
@@ -168,12 +188,12 @@ void Contriols::parseData(QByteArray newData)
 }
 
 void Contriols::processData(const QByteArray& qbytearray){
-
+    //向电子海图通过TCP发送GPS数据
     m_Client->write(QString(qbytearray).toUtf8().data());
 
     QString str = QString::fromUtf8(qbytearray);
     // 获取当前时间
-    QString currentTime = QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss");
+    QString currentTime = QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss:zzz");
     QRegularExpression regex("SX(-*[0-9.]+)L(-*[0-9.]+)A(-*[0-9.]+)E");
     QRegularExpressionMatch match = regex.match(str);
 
@@ -183,7 +203,6 @@ void Contriols::processData(const QByteArray& qbytearray){
         qreal aNumber =  match.captured(3).toDouble();
 
 //        qDebug() << "SX: " << sxNumber << " Long: " << lNumber << " Lat: " << aNumber;
-        // 将输出语句修改为保存sxNumber、lNumber和aNumber的值
         ui->lineEdit_longtitude->setText(QString::number(lNumber, 'f', 6));
         ui->lineEdit_latitude->setText(QString::number(aNumber, 'f', 6));
         qreal velocity_abs = caculate_velocity_abs(lNumber, aNumber);
@@ -191,28 +210,25 @@ void Contriols::processData(const QByteArray& qbytearray){
         ui->lineEdit_abV_kn->setText(QString::number( velocity_abs*1.94384, 'f', 1));
         if (sxNumber < 0) sxNumber += 360;
         emit update_DashboardCourseSpeed(sxNumber); //
-//        if (logFile->open(QIODevice::Append | QIODevice::Text))
+//        emit m_signalSendCmdToSimulator(QString(""));
+
+        //存进文件
         if(logFile->isOpen())
         {
             QTextStream stream(logFile);
-//            stream << currentTime << "," << sxNumber << "," << lNumber << "," << aNumber << "\n";
             stream << currentTime << "," << QString::number(sxNumber, 'f', 6) << ","
                    << QString::number(lNumber, 'f', 6) << "," << QString::number(aNumber, 'f', 6) << "\n";
-//            logFile->close();
         }
 
         {
-            //期望点
-            //添加期望点test m_cAlgorithm_control.AddPoint(lat,lon);
             if(m_bIsControl) {
+                //添加期望点test m_cAlgorithm_control.AddPoint(lat,lon);
                 m_cAlgorithm_control.AddPoints(121.534996, 38.865784);
                 m_cAlgorithm_control.AddPoints(121.534683, 38.865903);
                 m_cAlgorithm_control.AddPoints(121.534531, 38.865887);
                 m_cAlgorithm_control.AddPoints(121.534760, 38.865757);
 
                 ZLControl::GPSPoint GPS1(lNumber,aNumber);
-                //GPS1.lon=lNumber;
-                //GPS1.lat=aNumber;
                 ZLControl::ControlInfo CIF;
                 CIF =  m_cAlgorithm_control.CalMainTest(GPS1, sxNumber);
                 m_iCmdRudder = CIF.DeltaE + m_iBias_cmd_rudder;
@@ -230,6 +246,7 @@ void Contriols::processData(const QByteArray& qbytearray){
 //void Contriols::on_pushButton_connect_clicked()
 void Contriols::connect_clicked()
 {
+    //注释部分是手动连接服务器的代码
 //    if(ui->pushButton_connect->text() == "连接" && !m_Client) {
         //获取服务器IP和端口
         QString ip = "127.0.0.1"; //ui->lineEdit_ip->text();192.168.1.100
@@ -305,16 +322,16 @@ void Contriols::on_pushButton_CmdRight_clicked()
 
 void Contriols::on_pushButton_CmdLeftThruster_clicked()
 {
-    m_iCmdSideThuster -= m_iStepPropellar;
-    if(m_iCmdSideThuster < -100 + m_iBias_cmd_prop) m_iCmdSideThuster += m_iStepPropellar;
+    m_iCmdSideThuster -= m_iStepSideThruster;
+    if(m_iCmdSideThuster < -100 + m_iBias_cmd_prop) m_iCmdSideThuster += m_iStepSideThruster;
     sendCmdToShip();
 }
 
 
 void Contriols::on_pushButton_CmdRightThruster_clicked()
 {
-    m_iCmdSideThuster += m_iStepPropellar;
-    if(m_iCmdSideThuster > 100 + m_iBias_cmd_prop) m_iCmdSideThuster -= m_iStepPropellar;
+    m_iCmdSideThuster += m_iStepSideThruster;
+    if(m_iCmdSideThuster > 100 + m_iBias_cmd_prop) m_iCmdSideThuster -= m_iStepSideThruster;
     sendCmdToShip();
 }
 
@@ -480,8 +497,39 @@ void Contriols::on_pushButton_openPortArduino_clicked()
     }
 }
 
+void Contriols::UpdateGPS()
+{
+    m_dLongtitude += 0.000002;
+    m_dLatitude -= 0.000002;
+    m_fCourse += 0.1;
+    QString result;
+    QTextStream resultStream(&result);
+//    resultStream.setRealNumberPrecision(6);
+    resultStream << "SX" << m_fCourse << "L" << QString::number(m_dLongtitude, 'f', 6) << "A" << QString::number(m_dLatitude, 'f', 6) << "E";
+    QByteArray byteArray = result.toUtf8();
+
+    emit m_signalSendGPSToSimulator(QString::fromUtf8(byteArray));
+    parseData(byteArray);
+}
 #endif
 
+#ifdef REPLAY_MODE
+void Contriols::On_receive_RecordedData(QByteArray byteArray)
+{
+    parseData(byteArray);
+}
+
+void Contriols::On_receive_RecordedData_end(){
+    QMessageBox::information(this,
+        tr("消息框"),
+        tr("回放结束"),
+        QMessageBox::Ok | QMessageBox::Cancel,
+        QMessageBox::Ok);
+}
+
+
+
+#endif
 
 void Contriols::On_receive_pushButton_switchControl(bool rl_flag)
 {

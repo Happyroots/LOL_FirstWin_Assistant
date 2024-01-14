@@ -42,12 +42,10 @@ private:
     int m_iTimeout = 0;
 
 signals:
-    virtual void sendResultToGui(QByteArray result);
+    void sendResultToGui(QByteArray result);
 
     //接收数据
-    virtual void receive_data(QByteArray tmp);
-
-
+//    void receive_data(QByteArray tmp);
 
 protected:
     QThread *m_thread;
