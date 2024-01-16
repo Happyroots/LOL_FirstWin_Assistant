@@ -8,7 +8,12 @@
 
 DUMPData::DUMPData(QString filePath, QObject *parent)
 {
+    m_pSettings = new QSettings("config//settings.ini", QSettings::IniFormat);
+    // 读取配置文件
+    m_sFilePath = m_pSettings->value("path/recordedfile").toString();
+
     if(!filePath.isEmpty()) m_sFilePath = filePath;
+
     m_pRecordedData = new QFile(m_sFilePath);
     if (!m_pRecordedData->open(QIODevice::ReadOnly | QIODevice::Text)) {
         qDebug() << "Failed to open CSV file: " << m_pRecordedData->errorString();
@@ -36,6 +41,7 @@ void DUMPData::start_timer()
 DUMPData::~DUMPData()
 {
     m_pRecordedData->close();
+    if(!m_pSettings) delete m_pSettings; m_pSettings = nullptr;
 }
 
 void DUMPData::dumpData()

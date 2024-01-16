@@ -12,14 +12,8 @@ class UDPSocket : public QObject
 public:
     explicit UDPSocket(QObject *parent = nullptr);
 
-    UDPSocket(QString ip, quint16 port, QObject *parent = nullptr);
+    UDPSocket(QHostAddress ip, quint16 port, QObject *parent = nullptr);
     ~UDPSocket();
-
-    //绑定本机的ip和端口号信息
-    bool bind(QString ip, ushort port);
-
-    //设置目标主机的ip和端口号
-    void setTargetInfo(QString ip, quint16 port);
 
 signals:
     //通过该信号传递接收到的数据

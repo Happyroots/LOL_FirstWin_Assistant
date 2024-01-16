@@ -51,10 +51,13 @@ public:
     SerialWorker *m_SerialWorker_DTU = nullptr;
     QByteArray m_QSreceivedData;
     SerialWorkerP *m_SerialWorker_RudderBell = nullptr;
+    Bridge_ZL m_cBridge_ZL;
     Bridge_ZL::Values_Bridge m_sValues_Bridge;
     ZLControl m_cAlgorithm_control;
     QTcpSocket *m_Client = nullptr;
-    UDPSocket *m_cUDPSocket = nullptr;
+    UDPSocket *m_cUDPSocket_send = nullptr;
+    UDPSocket *m_cUDPSocket_receive = nullptr;
+
 #ifdef REPLAY_MODE
     DUMPData *m_pDumpData;
 #endif
@@ -94,6 +97,8 @@ private slots:
     void connect_clicked();
     qreal caculate_velocity_abs(qreal , qreal);
     void on_pushButton_openPortRudderBell_clicked();
+    void On_receive_Simulator(QString);
+
 #ifdef TESTING_MODE
     void on_pushButton_openPortArduino_clicked();
     void UpdateGPS();
@@ -125,6 +130,7 @@ public:
     qreal m_s2kn = 1.9438445;
     qreal cmd2velocity = 0.0255;
     QFile *logFile = nullptr;
+    Gps m_cGps;
     TimeDuration timeDuration;
     bool m_bIsControl = false;
     void keyPressEvent(QKeyEvent *event) override;
@@ -138,7 +144,7 @@ public:
 //     float ANumber0 = 38.0 + 52.190/60.0;
      double m_dLongtitude = 121.0 + 32.040 / 60.0;
      double m_dLatitude = 38.0 + 51.945/60.0;
-     float m_fCourse = 0;
+     float m_fHeading = 0;
 #endif
 };
 

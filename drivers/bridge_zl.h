@@ -34,6 +34,7 @@ public:
     int ChangeAzimuthingToTrueCourse(int iValue1, int iValue2, int value3, int iChangeValue); //转换为真实档位
     int ChangeSteerToTrueAngle(int iValue1, int iValue2, int iValue3, int iChangeValue);
 
+    Values_Bridge parseVHW(const QString& vhwMessage);
 };
 
 

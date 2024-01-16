@@ -30,7 +30,7 @@ Contriols::Contriols(QWidget *parent) :
     }
 
     // 初始化定时器
-//    updateTimer = new QTimer(this);
+//    updateTimer = new QTimer();
     //connect(updateTimer, &QTimer::timeout, this, &Contriols::onUpdateTimerTimeout);
 //    updateTimer->start(2000); // 每100毫秒触发一次定时器
 
@@ -41,7 +41,7 @@ Contriols::Contriols(QWidget *parent) :
     if (logFile->open(QIODevice::WriteOnly | QIODevice::Text))
     {
         QTextStream stream(logFile);
-        stream << "Time,SXNumber,LNumber,ANumber\n";
+        stream << "Time,heading,longitude,latitude\n";
 
     }
 
@@ -55,7 +55,6 @@ Contriols::Contriols(QWidget *parent) :
     m_updateTimer->setInterval(50);//间隔，微妙微单位，大家可以改一下这个值看看转动速度。
     connect(m_updateTimer, SIGNAL(timeout()), this, SLOT(UpdateGPS()));
     m_updateTimer->start();//启动定时器
-
 #else
     ui->pushButton_openPortArduino->setEnabled(false);
     ui->pushButton_openPortArduino->setVisible(false);
@@ -65,8 +64,14 @@ Contriols::Contriols(QWidget *parent) :
     ui->pushButton_switchControl->update();
     connect(ui->pushButton_switchControl, SIGNAL(syncStatusControl(bool)), this, SLOT(On_receive_pushButton_switchControl(bool)));
 
-    m_cUDPSocket = new UDPSocket("255.255.255.255", 8001);
-    connect(this, SIGNAL(m_signalSendGPSToSimulator(QString)), m_cUDPSocket, SLOT(sendData(QString)));
+//    m_cUDPSocket_send = new UDPSocket("127.0.0.1", 8001);
+    m_cUDPSocket_send = new UDPSocket(QHostAddress::Broadcast, 8001);
+    connect(this, SIGNAL(m_signalSendGPSToSimulator(QString)), m_cUDPSocket_send, SLOT(sendData(QString)));
+    //不能使用同一个端口，发送的会接收到，还得过滤，麻烦
+    m_cUDPSocket_receive = new UDPSocket(QHostAddress("0.0.0.0"), 8002);
+    connect(m_cUDPSocket_receive, SIGNAL(recvDataSignal(QString)), this, SLOT(On_receive_Simulator(QString)));
+
+
 #ifdef REPLAY_MODE
     m_pDumpData = new DUMPData();
     connect(m_pDumpData, SIGNAL(sendRecordedDataToGUI(QByteArray)), this, SLOT(On_receive_RecordedData(QByteArray)));
@@ -189,35 +194,37 @@ void Contriols::parseData(QByteArray newData)
 
 void Contriols::processData(const QByteArray& qbytearray){
     //向电子海图通过TCP发送GPS数据
-    m_Client->write(QString(qbytearray).toUtf8().data());
+    if(m_Client->state() == QAbstractSocket::ConnectedState)
+        m_Client->write(QString(qbytearray).toUtf8().data());
 
     QString str = QString::fromUtf8(qbytearray);
-    // 获取当前时间
-    QString currentTime = QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss:zzz");
     QRegularExpression regex("SX(-*[0-9.]+)L(-*[0-9.]+)A(-*[0-9.]+)E");
     QRegularExpressionMatch match = regex.match(str);
 
     if (match.hasMatch()) {
-        qreal sxNumber = match.captured(1).toDouble();
-        qreal lNumber =  match.captured(2).toDouble();
-        qreal aNumber =  match.captured(3).toDouble();
+        qreal heading = match.captured(1).toDouble();
+        qreal longitude =  match.captured(2).toDouble();
+        qreal latitude =  match.captured(3).toDouble();
 
-//        qDebug() << "SX: " << sxNumber << " Long: " << lNumber << " Lat: " << aNumber;
-        ui->lineEdit_longtitude->setText(QString::number(lNumber, 'f', 6));
-        ui->lineEdit_latitude->setText(QString::number(aNumber, 'f', 6));
-        qreal velocity_abs = caculate_velocity_abs(lNumber, aNumber);
+//        qDebug() << "SX: " << heading << " Long: " << longitude << " Lat: " << latitude;
+        ui->lineEdit_longtitude->setText(QString::number(longitude, 'f', 6));
+        ui->lineEdit_latitude->setText(QString::number(latitude, 'f', 6));
+        qreal velocity_abs = caculate_velocity_abs(longitude, latitude);
         ui->lineEdit_abV_m->setText(QString::number( velocity_abs, 'f', 2));
         ui->lineEdit_abV_kn->setText(QString::number( velocity_abs*1.94384, 'f', 1));
-        if (sxNumber < 0) sxNumber += 360;
-        emit update_DashboardCourseSpeed(sxNumber); //
-//        emit m_signalSendCmdToSimulator(QString(""));
+        if (heading < 0) heading += 360;
+        emit update_DashboardCourseSpeed(heading); //
+
+        QString GPRMC = m_cGps.makeGPRMC(longitude, latitude, heading);
+        emit m_signalSendGPSToSimulator(GPRMC);
 
         //存进文件
         if(logFile->isOpen())
         {
+            QString currentTime = QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss:zzz");
             QTextStream stream(logFile);
-            stream << currentTime << "," << QString::number(sxNumber, 'f', 6) << ","
-                   << QString::number(lNumber, 'f', 6) << "," << QString::number(aNumber, 'f', 6) << "\n";
+            stream << currentTime << "," << QString::number(heading, 'f', 6) << ","
+                   << QString::number(longitude, 'f', 6) << "," << QString::number(latitude, 'f', 6) << "\n";
         }
 
         {
@@ -228,9 +235,9 @@ void Contriols::processData(const QByteArray& qbytearray){
                 m_cAlgorithm_control.AddPoints(121.534531, 38.865887);
                 m_cAlgorithm_control.AddPoints(121.534760, 38.865757);
 
-                ZLControl::GPSPoint GPS1(lNumber,aNumber);
+                ZLControl::GPSPoint GPS1(longitude,latitude);
                 ZLControl::ControlInfo CIF;
-                CIF =  m_cAlgorithm_control.CalMainTest(GPS1, sxNumber);
+                CIF =  m_cAlgorithm_control.CalMainTest(GPS1, heading);
                 m_iCmdRudder = CIF.DeltaE + m_iBias_cmd_rudder;
                 m_iCmdPropeller = CIF.PropE + m_iBias_cmd_prop - 30;
                 qDebug()<<"Rud:"<<CIF.DeltaE;
@@ -454,6 +461,14 @@ void Contriols::on_pushButton_openPortRudderBell_clicked()
 
 }
 
+void Contriols::On_receive_Simulator(QString newUPDData)
+{
+    m_sValues_Bridge = m_cBridge_ZL.parseVHW(newUPDData);
+    m_iCmdRudder = m_sValues_Bridge.valueRudder;
+    m_iCmdPropeller = m_sValues_Bridge.valueBellLeft;
+    sendCmdToShip();
+}
+
 #ifdef TESTING_MODE
 
 void Contriols::on_pushButton_openPortArduino_clicked()
@@ -501,14 +516,15 @@ void Contriols::UpdateGPS()
 {
     m_dLongtitude += 0.000002;
     m_dLatitude -= 0.000002;
-    m_fCourse += 0.1;
+    m_fHeading += 0.1;
     QString result;
     QTextStream resultStream(&result);
 //    resultStream.setRealNumberPrecision(6);
-    resultStream << "SX" << m_fCourse << "L" << QString::number(m_dLongtitude, 'f', 6) << "A" << QString::number(m_dLatitude, 'f', 6) << "E";
+    resultStream << "SX" << m_fHeading << "L" << QString::number(m_dLongtitude, 'f', 6) << "A" << QString::number(m_dLatitude, 'f', 6) << "E";
     QByteArray byteArray = result.toUtf8();
 
-    emit m_signalSendGPSToSimulator(QString::fromUtf8(byteArray));
+    QString GPRMC = m_cGps.makeGPRMC(m_dLongtitude, m_dLatitude, m_fHeading);
+    emit m_signalSendGPSToSimulator(GPRMC);
     parseData(byteArray);
 }
 #endif
@@ -526,8 +542,6 @@ void Contriols::On_receive_RecordedData_end(){
         QMessageBox::Ok | QMessageBox::Cancel,
         QMessageBox::Ok);
 }
-
-
 
 #endif
 

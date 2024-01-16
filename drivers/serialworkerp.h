@@ -5,7 +5,7 @@
 #include <QTimer>
 #include "drivers/bridge_zl.h"
 
-
+//单例模式
 class SerialWorkerP : public SerialWorker
 {
     Q_OBJECT

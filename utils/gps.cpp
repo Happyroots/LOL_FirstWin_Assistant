@@ -9,6 +9,35 @@ Gps::Gps()
 double Gps::toRadians(double degree) {
     return degree * PI / 180.0;
 }
+
+#include <QDateTime>
+QString Gps::makeGPRMC(double longitude, double latitude, double heading)
+{
+    // 创建当前时间的字符串
+    QString currentTime = QDateTime::currentDateTime().toString("hhmmss");
+
+
+    // 创建GPRMC字符串
+    QString GPRMC = QString("$GPRMC,%1,A,").arg(currentTime);
+
+    // 添加纬度信息
+    QString latitudeString = QString("%1,%2").arg(latitude, 0, 'f', 6).arg(latitude >= 0 ? "N" : "S");
+    GPRMC += latitudeString + ",";
+
+    // 添加经度信息
+    QString longitudeString = QString("%1,%2").arg(longitude, 0, 'f', 6).arg(longitude >= 0 ? "E" : "W");
+    GPRMC += longitudeString + ",";
+
+    // 添加速度信息（这里设为0，你可以根据需要更改）
+    GPRMC += "0.0,";
+
+    // 添加航向信息
+    QString headingString = QString("%1").arg(heading, 0, 'f', 6);
+    GPRMC += headingString;
+
+    return GPRMC;
+}
+
 #include <cmath>
 double Gps::calculateDistance(double lat1, double lon1, double lat2, double lon2)
 {

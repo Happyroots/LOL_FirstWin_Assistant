@@ -254,3 +254,49 @@ int Bridge_ZL::ChangeSteerToTrueAngle(int iValue1, int iValue2, int iValue3, int
     return iCos;
 
 }
+
+#include <sstream>
+Bridge_ZL::Values_Bridge Bridge_ZL::parseVHW(const QString& vhwMessage) {
+    std::istringstream stream(vhwMessage.toStdString());
+    std::string field;
+
+    std::vector<std::string> fields;
+    while (std::getline(stream, field, ',')) {
+        fields.push_back(field);
+    }
+    Bridge_ZL::Values_Bridge values_bridge;
+    // 确保字段数量足够，并且第三个字段是"A"（数据有效） 注意空格，第三个字段是空格+A
+//    qDebug() <<  fields[2].c_str();
+    if (fields.size() >= 6 &&
+            fields[2] == std::string("A")) {
+        // 获取数字字段
+        std::string value_RudderStr = fields[3];
+        std::string value_BellStr = fields[4];
+
+        try {
+            // 解析数字
+            int value_Rudder = std::stoi(value_RudderStr);
+            int value_Bell = std::stoi(value_BellStr);
+
+            // 输出或使用这些数字
+//            qDebug() << "舵：" << value_Rudder-35;
+//            qDebug() << "车：" << value_Bell-100;
+
+            // 如果有需要，可以将这些值存储到类成员变量中
+            values_bridge.valueRudder = value_Rudder;
+            values_bridge.valueBellLeft = values_bridge.valueBellRight = value_Bell;
+        }
+        catch (const std::invalid_argument& e) {
+            qDebug()  << "无效的数据：" << e.what();
+        }
+        catch (const std::out_of_range& e) {
+            qDebug()  << "数据超出范围：" << e.what();
+        }
+    }
+    else {
+        qDebug() << "无效的VHW消息";
+        values_bridge.valueBellLeft = values_bridge.valueBellRight = 100;
+        values_bridge.valueRudder = 35;
+    }
+    return values_bridge;
+}

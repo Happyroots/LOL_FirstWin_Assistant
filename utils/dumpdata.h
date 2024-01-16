@@ -6,6 +6,7 @@
 #include <QFile>
 #include <QTimer>
 #include <QTextStream>
+#include <QSettings>
 
 class DUMPData : public QObject
 {
@@ -16,11 +17,16 @@ public:
     ~DUMPData();
 
     QFile *m_pRecordedData;
-    QString m_sFilePath = "C:\\Users\\26282\\Desktop\\release_landterminal\\11.csv";
+    QString m_sFilePath;
+//    QString m_sFilePath = "C:\\Users\\93211\\Desktop\\11.csv";
+
     QTextStream *m_pfileIn;
 
     QThread *m_thread;
     QTimer *m_updateTimer;
+
+    // 创建QSettings对象
+    QSettings *m_pSettings = nullptr;
 
 signals:
     void sendRecordedDataToGUI(QByteArray);
