@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE QtCreatorProject>
-<!-- Written by QtCreator 5.0.2, 2024-01-16T13:48:23. -->
+<!-- Written by QtCreator 5.0.2, 2024-01-20T09:57:44. -->
 <qtcreator>
  <data>
   <variable>EnvironmentId</variable>
@@ -247,7 +247,6 @@
     <value type="bool" key="RunConfiguration.UseLibrarySearchPath">true</value>
     <value type="bool" key="RunConfiguration.UseQmlDebugger">false</value>
     <value type="bool" key="RunConfiguration.UseQmlDebuggerAuto">true</value>
-    <value type="QString" key="RunConfiguration.WorkingDirectory.default">C:/Users/26282/Desktop/land-terminal-master20231223/build-LandTerminal-Desktop_Qt_5_12_12_MinGW_64_bit-Release</value>
    </valuemap>
    <value type="int" key="ProjectExplorer.Target.RunConfigurationCount">1</value>
   </valuemap>

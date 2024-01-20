@@ -35,6 +35,9 @@ public:
     int ChangeSteerToTrueAngle(int iValue1, int iValue2, int iValue3, int iChangeValue);
 
     Values_Bridge parseVHW(const QString& vhwMessage);
+
+    int m_iDeviceID = 0x05;
+
 };
 
 

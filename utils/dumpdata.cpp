@@ -25,7 +25,7 @@ DUMPData::DUMPData(QString filePath, QObject *parent)
     this->moveToThread(m_thread);
     m_pRecordedData->moveToThread(m_thread);
     m_updateTimer = new QTimer();
-    m_updateTimer->setInterval(5);
+    m_updateTimer->setInterval(200);
     connect(m_updateTimer, SIGNAL(timeout()), this, SLOT(dumpData()));
     m_updateTimer->moveToThread(m_thread);
     connect(m_thread, SIGNAL(started()), this, SLOT(start_timer()));

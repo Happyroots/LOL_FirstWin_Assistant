@@ -22,7 +22,7 @@ public:
                            QObject *parent = nullptr
                            );
     QTimer *m_updateTimer;
-    Bridge_ZL *m_cBridge_ZL;
+    Bridge_ZL *m_pBridge_ZL;
 
 public slots:
     void requestData();

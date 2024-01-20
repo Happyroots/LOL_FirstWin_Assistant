@@ -23,8 +23,9 @@ void SerialWorkerP::start()
 //    this->moveToThread(m_thread);
 //    m_serialPort->moveToThread(m_thread);
 
-    m_cBridge_ZL = new Bridge_ZL();
-    m_cBridge_ZL->moveToThread(m_thread);
+    m_pBridge_ZL = new Bridge_ZL();
+    m_pBridge_ZL->m_iDeviceID = 1;
+    m_pBridge_ZL->moveToThread(m_thread);
 
     m_updateTimer = new QTimer();
     m_updateTimer->moveToThread(m_thread);
@@ -45,7 +46,7 @@ void SerialWorkerP::start_timer()
 #include <QDebug>
 void SerialWorkerP::requestData(int iAddress)
 {
-    QByteArray byteArray = m_cBridge_ZL->generateQueryMessage(iAddress);
+    QByteArray byteArray = m_pBridge_ZL->generateQueryMessage(iAddress);
     if(is_open())
         doDataSendWork( byteArray );
 }
@@ -53,13 +54,20 @@ void SerialWorkerP::requestData(int iAddress)
 #include <QDebug>
 void SerialWorkerP::requestData()
 {
-    //半双工
-    requestData(0x05);
-    m_thread->msleep(200);
-//    requestData(0x06);
+    //半双工 好用 V1.0
+//    requestData(0x05);
 //    m_thread->msleep(200);
-    requestData(0x07);
-    m_thread->msleep(200);
+////    requestData(0x06);
+////    m_thread->msleep(200);
+//    requestData(0x07);
+//    m_thread->msleep(200);
+
+    //V2.0
+    requestData(m_pBridge_ZL->m_iDeviceID);
+    m_pBridge_ZL->m_iDeviceID ++;
+    m_pBridge_ZL->m_iDeviceID %= 8;
+    if(m_pBridge_ZL->m_iDeviceID == 0x00) m_pBridge_ZL->m_iDeviceID = 0x03; //跳过 00， 02， 03
+
 
 
 //    改进：降低延迟，全收到
@@ -71,8 +79,8 @@ void SerialWorkerP::requestData()
 //        m_thread->msleep(500);
 
     //Todo:循环只能2次，看看什么问题？
-//    for(int iAddress = m_cBridge_ZL->ADDRESS_BellLeft; iAddress <= m_cBridge_ZL->ADDRESS_Rudder; iAddress ++){
-//        QByteArray byteArray = m_cBridge_ZL->generateQueryMessage(iAddress);
+//    for(int iAddress = m_pBridge_ZL->ADDRESS_BellLeft; iAddress <= m_pBridge_ZL->ADDRESS_Rudder; iAddress ++){
+//        QByteArray byteArray = m_pBridge_ZL->generateQueryMessage(iAddress);
 //        if(is_open())
 //            doDataSendWork( byteArray );
 //        //等待一会，看看能收全不
@@ -86,7 +94,7 @@ void SerialWorkerP::requestData()
 //                requestedData =  m_serialPort->readAll();
 //        }
 //        if (requestedData.isEmpty()) return;
-//        m_cBridge_ZL->parseData(requestedData);
+//        m_pBridge_ZL->parseData(requestedData);
 //    }
 
 }
@@ -110,9 +118,9 @@ void SerialWorkerP::doDataReciveWork()
     QByteArray requestedData = buffer;
 
     if (requestedData.isEmpty()) return;
-    m_cBridge_ZL->parseData(requestedData);
+    m_pBridge_ZL->parseData(requestedData);
 // 立刻发送到界面线程，降低延迟
-    emit sendBridgeDataToGui(m_cBridge_ZL->m_sValuesBridge);
+    emit sendBridgeDataToGui(m_pBridge_ZL->m_sValuesBridge);
 
 }
 
