@@ -6,29 +6,13 @@ extern "C" {
 #include <QJsonDocument>
 #include <QDebug>
 
-
 Bridge_ZL::Bridge_ZL(QObject *parent) : QObject(parent)
 {
-     QFile file(":/config/config_bridge_33.json"); // 替换为你的 JSON 文件路径
 
-     if (!file.open(QIODevice::ReadOnly)) {
-         qDebug() << "Failed to open file.";
-     }
-     QByteArray jsonData = file.readAll();
-     file.close();
+    // 创建QSettings对象，并设置INI文件路径
+    m_pSettings_bridge33 = new QSettings(":/config/config_bridge_33.ini", QSettings::IniFormat);
 
-     QJsonParseError error;
-     QJsonDocument jsonDoc = QJsonDocument::fromJson(jsonData, &error);
 
-     if (error.error != QJsonParseError::NoError) {
-         qDebug() << "Failed to parse JSON:" << error.errorString();
-     }
-
-     if (!jsonDoc.isObject()) {
-         qDebug() << "JSON is not an object.";
-     }
-
-     m_jConfigBridge_ZL = jsonDoc.object();
 }
 
 QByteArray Bridge_ZL::generateQueryMessage(int iAddress)
@@ -94,19 +78,32 @@ Bridge_ZL::Values_Bridge Bridge_ZL::parseData(QByteArray requestedData)
 //    {
 //        return false;
 //    }
+    // 读取iSideThruster部分的值
     if(m_Address == ADDRESS_SideThrusterH){
-        m_sValuesBridge.valueSideThrusterHead = ChangeTelegraphToTrueBell(m_jConfigBridge_ZL["iSideThrusterH1"].toInt(), m_jConfigBridge_ZL["iSideThrusterH2"].toInt(), m_jConfigBridge_ZL["iSideThrusterH3"].toInt(), m_iOriginValBridge[m_Address]);
+        int sideThrusterH1 = m_pSettings_bridge33->value("iSideThruster/iSideThrusterH1").toInt();
+        int sideThrusterH2 = m_pSettings_bridge33->value("iSideThruster/iSideThrusterH2").toInt();
+        int sideThrusterH3 = m_pSettings_bridge33->value("iSideThruster/iSideThrusterH3").toInt();
+        m_sValuesBridge.valueSideThrusterHead = ChangeTelegraphToTrueBell(sideThrusterH1, sideThrusterH2, sideThrusterH3, m_iOriginValBridge[m_Address]);
     }
 
+    // 读取iTelegraphBell部分的值
     if(m_Address == ADDRESS_BellLeft){
-        m_sValuesBridge.valueBellLeft = ChangeTelegraphToTrueBell(m_jConfigBridge_ZL["iTelegraphBellL1"].toInt(), m_jConfigBridge_ZL["iTelegraphBellL2"].toInt(), m_jConfigBridge_ZL["iTelegraphBellL3"].toInt(), m_iOriginValBridge[m_Address]);
+        int telegraphBellL1 = m_pSettings_bridge33->value("iTelegraphBell/iTelegraphBellL1").toInt();
+        int telegraphBellL2 = m_pSettings_bridge33->value("iTelegraphBell/iTelegraphBellL2").toInt();
+        int telegraphBellL3 = m_pSettings_bridge33->value("iTelegraphBell/iTelegraphBellL3").toInt();
+        m_sValuesBridge.valueBellLeft = ChangeTelegraphToTrueBell(telegraphBellL1, telegraphBellL2, telegraphBellL3, m_iOriginValBridge[m_Address]);
     }
 //    if(m_Address == ADDRESS_BellRight){
 //        m_sValuesBridge.valueBellRight = ChangeTelegraphToTrueBell(m_jConfigBridge_ZL["iTelegraphBellR1"].toInt(), m_jConfigBridge_ZL["iTelegraphBellR2"].toInt(), m_jConfigBridge_ZL["iTelegraphBellR3"].toInt(),  m_iOriginValBridge[m_Address - ADDRESS_BellLeft]);
 
 //    }
+
+    // 读取iRudderAngle部分的值
     if(m_Address == ADDRESS_Rudder){
-        m_sValuesBridge.valueRudder = ChangeSteerToTrueAngle(m_jConfigBridge_ZL["iRudderAngle1"].toInt(), m_jConfigBridge_ZL["iRudderAngle2"].toInt(), m_jConfigBridge_ZL["iRudderAngle3"].toInt(), m_iOriginValBridge[m_Address]);
+        int rudderAngle1 = m_pSettings_bridge33->value("iRudderAngle/iRudderAngle1").toInt();
+        int rudderAngle2 = m_pSettings_bridge33->value("iRudderAngle/iRudderAngle2").toInt();
+        int rudderAngle3 = m_pSettings_bridge33->value("iRudderAngle/iRudderAngle3").toInt();
+        m_sValuesBridge.valueRudder = ChangeSteerToTrueAngle(rudderAngle1, rudderAngle2, rudderAngle3, m_iOriginValBridge[m_Address]);
     }
 
     //通过判断ADRRES,使用相应的函数，获取车舵命令，一次循环全部搞定？
@@ -202,7 +199,7 @@ int Bridge_ZL::ChangeSteerToTrueAngle(int iValue1, int iValue2, int iValue3, int
     float fLightThrottleLevel = 0.0f;
     float fCos = 0;
     int iCos = 0;
-    float fMax = m_jConfigBridge_ZL["iStbdMaxRudderAng"].toDouble();
+    float fMax = 35; //m_pSettings_bridge33->value("iRudderAngle/iStbdMaxRudderAng").toInt();
 
     if (iValue1 >= iValue3)
     {

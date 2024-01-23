@@ -78,6 +78,8 @@ Contriols::Contriols(QWidget *parent) :
     connect(m_pDumpData, SIGNAL(endRecordedDataToGUI()), this, SLOT(On_receive_RecordedData_end()));
 
 #endif
+//    on_pushButton_openPortDTU_clicked();
+//    on_pushButton_openPortRudderBell_clicked();
 
 }
 
@@ -96,7 +98,13 @@ void Contriols::On_receive_DTU(QByteArray tmpdata)
 void Contriols::On_receive_RudderBell(Bridge_ZL::Values_Bridge data_RudderBell)
 {
     if(m_iCmdRudder - m_iBias_cmd_rudder != -data_RudderBell.valueRudder  ||
-            m_iCmdPropeller - m_iBias_cmd_prop != -data_RudderBell.valueBellLeft) {
+            m_iCmdPropeller - m_iBias_cmd_prop != -data_RudderBell.valueBellLeft ||
+            m_iCmdSideThuster - m_iBias_cmd_prop != -data_RudderBell.valueSideThrusterHead) {
+        m_iCmdSideThuster = -data_RudderBell.valueSideThrusterHead;
+        m_iCmdSideThuster *= 10;
+        m_iCmdSideThuster += m_iBias_cmd_prop;
+        m_iCmdSideThuster = (m_iCmdSideThuster + 5) / 10 * 10;
+
         m_iCmdPropeller = -data_RudderBell.valueBellLeft;
         m_iCmdPropeller *= 10;
         m_iCmdPropeller += m_iBias_cmd_prop;
@@ -352,6 +360,7 @@ void Contriols::on_pushButton_openPortDTU_clicked()
         if (ui->comboBox_port->count() > 0)///当前列表的内容个数
         {///打开串口操作
             int SelBaudRate=9600;
+            QString port("com10");
             m_SerialWorker_DTU = new SerialWorker(ui->comboBox_port->currentText().toStdString().c_str(),
                                                   SelBaudRate,
                                                   QSerialPort::NoParity,
@@ -426,6 +435,7 @@ void Contriols::on_pushButton_openPortRudderBell_clicked()
         if (ui->comboBox_port->count() > 0)///当前列表的内容个数
         {///打开串口操作
             int SelBaudRate=115200;
+            QString port("com2");
             m_SerialWorker_RudderBell = new SerialWorkerP(ui->comboBox_port->currentText().toStdString().c_str(),
                                                   SelBaudRate,
                                                   QSerialPort::NoParity,

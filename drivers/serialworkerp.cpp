@@ -98,7 +98,7 @@ void SerialWorkerP::doDataReciveWork()
 //    m_thread->usleep(100); //数据容易没，效果也不好
     QByteArray buffer;
     buffer = m_serialPort->read(7); // 读取 7 个字节的数据
-    qDebug() <<  "Tread received" << buffer << "ThreadID:" << QThread::currentThreadId();
+//    qDebug() <<  "Tread received" << buffer << "ThreadID:" << QThread::currentThreadId();
     // 2.进行数据处理
     //1.等待一会，看看能收全不,
     //2.可能是线松了，没信号
