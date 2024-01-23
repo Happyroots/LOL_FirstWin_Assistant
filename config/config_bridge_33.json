@@ -1,0 +1,21 @@
+{
+    "ip": "127.0.0.1",
+    "iSideThrusterH1": 22,
+    "iSideThrusterH2": 2424,
+    "iSideThrusterH3": 4865,
+    "iSideThrusterB1": 4726,
+    "iSideThrusterB2": 2430,
+    "iSideThrusterB3": 154,
+    "iTelegraphBellL1": 4650,
+    "iTelegraphBellL2": 2432,
+    "iTelegraphBellL3": 86,
+    "iTelegraphBellR1": 352,
+    "iTelegraphBellR2": 2408,
+    "iTelegraphBellR3": 4606,
+    "iRudderAngle1": 171,
+    "iRudderAngle2": 2438,
+    "iRudderAngle3": 4742,
+    "iStbdMaxRudderAng": 35.0
+}
+
+

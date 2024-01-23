@@ -9,7 +9,7 @@ extern "C" {
 
 Bridge_ZL::Bridge_ZL(QObject *parent) : QObject(parent)
 {
-     QFile file(":/config/config_bridge_ZL.json"); // 替换为你的 JSON 文件路径
+     QFile file(":/config/config_bridge_33.json"); // 替换为你的 JSON 文件路径
 
      if (!file.open(QIODevice::ReadOnly)) {
          qDebug() << "Failed to open file.";
@@ -85,7 +85,7 @@ Bridge_ZL::Values_Bridge Bridge_ZL::parseData(QByteArray requestedData)
         {
             for (int i = 0; i < m_registernumber; i++)
             {
-                m_iOriginValBridge[i + m_Address - ADDRESS_BellLeft] = cTempDataForRX[3 + 2 * i + 0] * 16 * 16 + cTempDataForRX[3 + 2 * i + 1];	//读出数据存放在AI数组中
+                m_iOriginValBridge[m_Address] = cTempDataForRX[3 + 2 * i + 0] * 16 * 16 + cTempDataForRX[3 + 2 * i + 1];	//读出数据存放在AI数组中
             }
 
         }
@@ -94,15 +94,19 @@ Bridge_ZL::Values_Bridge Bridge_ZL::parseData(QByteArray requestedData)
 //    {
 //        return false;
 //    }
-    if(m_Address == ADDRESS_BellLeft){
-        m_sValuesBridge.valueBellLeft = ChangeTelegraphToTrueBell(m_jConfigBridge_ZL["iTelegraphBellL1"].toInt(), m_jConfigBridge_ZL["iTelegraphBellL2"].toInt(), m_jConfigBridge_ZL["iTelegraphBellL3"].toInt(), m_iOriginValBridge[m_Address - ADDRESS_BellLeft]);
+    if(m_Address == ADDRESS_SideThrusterH){
+        m_sValuesBridge.valueSideThrusterHead = ChangeTelegraphToTrueBell(m_jConfigBridge_ZL["iSideThrusterH1"].toInt(), m_jConfigBridge_ZL["iSideThrusterH2"].toInt(), m_jConfigBridge_ZL["iSideThrusterH3"].toInt(), m_iOriginValBridge[m_Address]);
     }
-    if(m_Address == ADDRESS_BellRight){
-        m_sValuesBridge.valueBellRight = ChangeTelegraphToTrueBell(m_jConfigBridge_ZL["iTelegraphBellR1"].toInt(), m_jConfigBridge_ZL["iTelegraphBellR2"].toInt(), m_jConfigBridge_ZL["iTelegraphBellR3"].toInt(),  m_iOriginValBridge[m_Address - ADDRESS_BellLeft]);
 
+    if(m_Address == ADDRESS_BellLeft){
+        m_sValuesBridge.valueBellLeft = ChangeTelegraphToTrueBell(m_jConfigBridge_ZL["iTelegraphBellL1"].toInt(), m_jConfigBridge_ZL["iTelegraphBellL2"].toInt(), m_jConfigBridge_ZL["iTelegraphBellL3"].toInt(), m_iOriginValBridge[m_Address]);
     }
+//    if(m_Address == ADDRESS_BellRight){
+//        m_sValuesBridge.valueBellRight = ChangeTelegraphToTrueBell(m_jConfigBridge_ZL["iTelegraphBellR1"].toInt(), m_jConfigBridge_ZL["iTelegraphBellR2"].toInt(), m_jConfigBridge_ZL["iTelegraphBellR3"].toInt(),  m_iOriginValBridge[m_Address - ADDRESS_BellLeft]);
+
+//    }
     if(m_Address == ADDRESS_Rudder){
-        m_sValuesBridge.valueRudder = ChangeSteerToTrueAngle(m_jConfigBridge_ZL["iRudderAngle1"].toInt(), m_jConfigBridge_ZL["iRudderAngle2"].toInt(), m_jConfigBridge_ZL["iRudderAngle3"].toInt(), m_iOriginValBridge[m_Address - ADDRESS_BellLeft]);
+        m_sValuesBridge.valueRudder = ChangeSteerToTrueAngle(m_jConfigBridge_ZL["iRudderAngle1"].toInt(), m_jConfigBridge_ZL["iRudderAngle2"].toInt(), m_jConfigBridge_ZL["iRudderAngle3"].toInt(), m_iOriginValBridge[m_Address]);
     }
 
     //通过判断ADRRES,使用相应的函数，获取车舵命令，一次循环全部搞定？
@@ -300,3 +304,4 @@ Bridge_ZL::Values_Bridge Bridge_ZL::parseVHW(const QString& vhwMessage) {
     }
     return values_bridge;
 }
+

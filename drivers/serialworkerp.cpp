@@ -30,7 +30,7 @@ void SerialWorkerP::start()
     m_updateTimer = new QTimer();
     m_updateTimer->moveToThread(m_thread);
 
-    m_updateTimer->setInterval(1000);//间隔，
+    m_updateTimer->setInterval(20);//间隔，
     connect(m_updateTimer, SIGNAL(timeout()), this, SLOT(requestData()));
     connect(m_thread, SIGNAL(started()), this, SLOT(start_timer()));
 
@@ -59,24 +59,15 @@ void SerialWorkerP::requestData()
 //    m_thread->msleep(200);
 ////    requestData(0x06);
 ////    m_thread->msleep(200);
-//    requestData(0x07);
+//    requestData(0x07); //舵
 //    m_thread->msleep(200);
 
     //V2.0
+    //    改进：降低延迟，全收到
     requestData(m_pBridge_ZL->m_iDeviceID);
-    m_pBridge_ZL->m_iDeviceID ++;
-    m_pBridge_ZL->m_iDeviceID %= 8;
+    m_pBridge_ZL->m_iDeviceID += 0x01;
+    m_pBridge_ZL->m_iDeviceID %= 0x08;
     if(m_pBridge_ZL->m_iDeviceID == 0x00) m_pBridge_ZL->m_iDeviceID = 0x03; //跳过 00， 02， 03
-
-
-
-//    改进：降低延迟，全收到
-//        requestData(0x05);
-//        m_thread->msleep(500);
-//        requestData(0x06);
-//        m_thread->msleep(500);
-//        requestData(0x07);
-//        m_thread->msleep(500);
 
     //Todo:循环只能2次，看看什么问题？
 //    for(int iAddress = m_pBridge_ZL->ADDRESS_BellLeft; iAddress <= m_pBridge_ZL->ADDRESS_Rudder; iAddress ++){
@@ -107,7 +98,7 @@ void SerialWorkerP::doDataReciveWork()
 //    m_thread->usleep(100); //数据容易没，效果也不好
     QByteArray buffer;
     buffer = m_serialPort->read(7); // 读取 7 个字节的数据
-//    qDebug() <<  "Tread received" << buffer << "ThreadID:" << QThread::currentThreadId();
+    qDebug() <<  "Tread received" << buffer << "ThreadID:" << QThread::currentThreadId();
     // 2.进行数据处理
     //1.等待一会，看看能收全不,
     //2.可能是线松了，没信号
